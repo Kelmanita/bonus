@@ -4,22 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bonus</title>
+
     <style>
-        body, html {
+        /* Сброс и фиксация viewport для ТВ */
+        html, body {
             margin: 0;
             padding: 0;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #ffffff;
         }
+
+        /* iframe всегда во весь экран */
         iframe {
             border: none;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
+            display: block;
         }
     </style>
 </head>
 <body>
 
-        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vT9g6_S-GrBLE3-sgiDv_GmTony1aw-RLicAAgBm1uB_TMJJs9Y5djjv8u67Pu82kmKDq4aHlcMzsso/pubhtml?gid=1345331115&amp;single=true" width="100%" height="100%" frameborder="0" scrolling="no" title="Google Spreadsheet"></iframe>
+    <!-- iframe без src, чтобы загрузить позже -->
+    <iframe id="sheetFrame"
+            frameborder="0"
+            scrolling="no"
+            title="Google Spreadsheet">
+    </iframe>
+
+    <script>
+        // Ссылка на Google Sheets
+        const SHEET_URL =
+            "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9g6_S-GrBLE3-sgiDv_GmTony1aw-RLicAAgBm1uB_TMJJs9Y5djjv8u67Pu82kmKDq4aHlcMzsso/pubhtml?gid=1345331115&single=true";
+
+        // Задержка нужна для Smart TV, чтобы viewport успел рассчитаться
+        setTimeout(() => {
+            const iframe = document.getElementById("sheetFrame");
+            iframe.src = SHEET_URL;
+
+            // Дополнительно пинаем resize — Google Sheets это любит
+            setTimeout(() => {
+                window.dispatchEvent(new Event("resize"));
+            }, 500);
+
+        }, 800); // 500–1000 мс — оптимально для ТВ
+    </script>
 
 </body>
 </html>

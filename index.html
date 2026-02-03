@@ -232,18 +232,18 @@
 
   <div class="grid">
     <div class="card">
-      <h2>RU <span class="pill">данные!G2:H28</span></h2>
+      <h2>RU</h2>
       <div id="chartRU" class="chartHost"></div>
     </div>
 
     <div class="row2">
       <div class="card">
-        <h2>ENG / PL <span class="pill">данные!C2:D8</span></h2>
+        <h2>ENG / PL </h2>
         <div id="chartENGPL" class="chartHost"></div>
       </div>
 
       <div class="card">
-        <h2>Team ratings <span class="pill">данные!P18:Q21</span></h2>
+        <h2>Team ratings </h2>
         <div id="sumTableWrap"></div>
       </div>
     </div>
@@ -399,11 +399,7 @@
 
     container.innerHTML = `
       <div class="vwrap ${compact ? "compact" : ""}">
-        <div class="cap">
-          <div>0</div>
-          <div>MAX (ось): ${esc(axisMax)} • ЦЕЛЬ ${esc(TARGET)}${showTargetInside ? "" : " (выше)"}</div>
-        </div>
-
+        <div class="cap"></div>
         <div class="plot">
           ${showTargetInside ? `
             <div class="targetLine" style="bottom:${targetPct}%;"></div>
@@ -548,6 +544,7 @@
 </script>
 </body>
 </html>
+
 
 
 

@@ -165,12 +165,18 @@
     .xlabels.compact{
       display:flex;
       justify-content:center;
-      gap:40px;
+      gap:40px;                 /* должно совпадать с gap в canvas */
       padding: 6px 30px 0 30px;
     }
+    
     .xlabels.compact .xlabel{
-      width:auto;
+      width:48px;               /* должно совпадать с barW в canvas (compact) */
+      text-align:center;
+      transform: translateX(-2px) rotate(-60deg); /* убираем translateX, он портит центр */
+      transform-origin: top center;
     }
+
+
 
     /* ========= Таблица сумм ========= */
     #sumTableWrap{
@@ -538,4 +544,5 @@
 </script>
 </body>
 </html>
+
 

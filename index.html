@@ -444,7 +444,7 @@
     return niceFrac * exp;
   }
 
-  function renderVerticalChart(container, pairs) {
+  function renderVerticalChart(container, pairs, opts = {}) {
     let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
     items.sort((a,b) => b.value - a.value);
 
@@ -455,7 +455,7 @@
     const targetPct = showTargetInside ? (TARGET / axisMax) * 100 : 100;
 
     container.innerHTML = `
-      <div class="vchart">
+      <div class="vchart ${opts.compact ? "compact" : ""}">
         <div class="cap">
           <div>0</div>
           <div>MAX (ось): ${esc(axisMax)} • ЦЕЛЬ ${esc(TARGET)}${showTargetInside ? "" : " (выше)"}</div>
@@ -487,7 +487,7 @@
       return `
         <div class="col">
           <div class="val">${esc(it.value)}</div>
-          <div class="bar" style="height:${h}%; background:${colorForName(it.name)};"></div>
+          <div class="bar" style="height:${h}%; background-color:${colorForName(it.name)};"></div>
         </div>
       `;
     }).join("");
@@ -532,7 +532,7 @@
       const sums = parseCSV(sumsText);
 
       renderVerticalChart(chartRU, ru);
-      renderVerticalChart(chartENGPL, engpl);
+      renderVerticalChart(chartENGPL, engpl, { compact: true });
       renderSumsTable(sums);
 
       statusEl.textContent = "Обновлено: " + new Date().toLocaleTimeString();
@@ -549,6 +549,7 @@
 </script>
 </body>
 </html>
+
 
 
 

@@ -4,55 +4,120 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bonus Dashboard</title>
+
   <style>
-    html, body { margin:0; padding:0; width:100vw; height:100vh; overflow:hidden; background:#fff; font-family: Arial, sans-serif; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Чуть крупнее базовый шрифт под ТВ */
+    body { font-size: 18px; }
+
     .wrap { height:100vh; display:flex; flex-direction:column; }
-    .topbar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #eee; }
-    .title { font-weight:700; font-size:18px; }
-    .status { opacity:.75; font-size:14px; white-space:nowrap; }
 
-    .grid { flex:1; display:grid; grid-template-rows: 2fr 1fr; gap:14px; padding:14px 16px; box-sizing:border-box; min-height:0; }
-    .row2 { display:grid; grid-template-columns: 1fr 1fr; gap:14px; min-height:0; }
+    .topbar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding: 14px 18px;
+      border-bottom: 1px solid #eee;
+    }
 
-    .card { border:1px solid #eee; border-radius:12px; padding:14px; box-sizing:border-box; min-height:0; overflow:hidden; }
-    .card h2 { margin:0 0 10px 0; font-size:18px; display:flex; align-items:center; gap:10px; }
-    .pill { font-size:14px; padding:3px 10px; border-radius:999px; border:1px solid #eee; background:#fafafa; }
+    .title { font-weight: 800; font-size: 22px; }
+    .status { opacity:.75; font-size: 16px; white-space: nowrap; }
 
-    .error { color:#b00020; background:#fff5f7; border:1px solid #ffd7dd; border-radius:10px; padding:12px; font-size:16px; line-height:1.35; }
+    .grid {
+      flex: 1;
+      display: grid;
+      grid-template-rows: 2fr 1fr;
+      gap: 14px;
+      padding: 14px 18px;
+      box-sizing: border-box;
+      min-height: 0;
+    }
 
-    /* ===== Вертикальная диаграмма без скролла ===== */
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .card {
+      border: 1px solid #eee;
+      border-radius: 14px;
+      padding: 16px;
+      box-sizing: border-box;
+      min-height: 0;
+      overflow: hidden; /* важно: без скролла в карточках */
+    }
+
+    .card h2 {
+      margin: 0 0 12px 0;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pill {
+      font-size: 14px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #eee;
+      background: #fafafa;
+    }
+
+    .error {
+      color: #b00020;
+      background: #fff5f7;
+      border: 1px solid #ffd7dd;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    /* ========= ВЕРТИКАЛЬНАЯ ДИАГРАММА (без скролла) ========= */
     .vchart {
       height: 100%;
       display: grid;
-      grid-template-rows: 24px 1fr 64px;
-      gap: 8px;
+      grid-template-rows: 26px 1fr 86px; /* снизу место для имен */
+      gap: 10px;
       overflow: hidden;
     }
 
     .cap {
       display:flex;
       justify-content:space-between;
-      font-size:14px;
-      opacity:.78;
+      align-items:center;
+      font-size: 16px;
+      opacity: .78;
       padding: 0 6px;
-      user-select:none;
-      white-space:nowrap;
+      user-select: none;
+      white-space: nowrap;
     }
 
     .plot {
       position: relative;
       border: 1px solid #eee;
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
-      background:
-        linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
+      background: linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
       background-size: 100% 20%;
     }
 
     /* линия цели */
     .targetLine {
       position:absolute;
-      left:0; right:0;
+      left:0;
+      right:0;
       height:2px;
       background:#e11d48;
       opacity:0.85;
@@ -61,25 +126,28 @@
     .targetLabel {
       position:absolute;
       right:10px;
-      transform: translateY(-50%);
-      font-size:12px;
-      font-weight:700;
+      transform: translateY(50%);
+      font-size: 14px;
+      font-weight: 900;
       color:#e11d48;
-      background: rgba(255,255,255,0.9);
-      padding:2px 6px;
-      border-radius:999px;
+      background: rgba(255,255,255,0.92);
+      padding: 3px 8px;
+      border-radius: 999px;
       pointer-events:none;
+      white-space: nowrap;
     }
 
+    /* ВАЖНО: растягиваем сетку на всю высоту, чтобы height:% у bar работал */
     .columns {
       position: absolute;
-      inset: 10px 10px 10px 10px;
+      inset: 12px;
       display: grid;
-      align-items: end;
-      gap: 4px;
+      align-items: stretch; /* <-- критично */
+      gap: 6px;
     }
 
     .col {
+      height: 100%;         /* <-- критично */
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -88,9 +156,10 @@
     }
 
     .val {
-      font-size: 12px;
+      font-size: 14px;
+      font-weight: 800;
       font-variant-numeric: tabular-nums;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
       opacity: .9;
       user-select:none;
       white-space:nowrap;
@@ -99,63 +168,79 @@
     .bar {
       width: 100%;
       height: 0%;
-      border-radius: 6px 6px 0 0;
+      border-radius: 8px 8px 0 0;
       transition: height .35s ease;
-      min-height: 2px; /* нули будет видно тонкой линией */
+      min-height: 3px; /* чтобы нули/малые значения не пропадали */
     }
 
+    /* подписи снизу — ОДНА СТРОКА */
     .xlabels {
       display: grid;
-      gap: 4px;
+      gap: 6px;
+      padding: 0 12px;
       align-items: start;
-      padding: 0 10px 0 10px;
-      user-select:none;
+      user-select: none;
+      overflow: hidden;
     }
 
     .xlabel {
-      font-size: 12px;
-      text-align:center;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      transform: rotate(-25deg);
+      font-weight: 700;
+      text-align: center;
+
+      /* одна строка */
+      white-space: nowrap;
+
+      /* делаем “красиво и видно”: лёгкий наклон, чтобы поместилось больше */
+      transform: rotate(-28deg);
       transform-origin: top center;
-      line-height: 1.1;
+
+      /* умный размер: на широком экране больше, на узком меньше */
+      font-size: clamp(11px, 1.05vw, 15px);
+      line-height: 1.05;
+
+      /* НЕ обрезаем троеточием, стараемся показать целиком */
+      overflow: visible;
     }
 
-    /* ===== Таблица сумм ===== */
+    /* ========= ТАБЛИЦА СУММ (влезает целиком, без скролла) ========= */
+    #sumTableWrap { height: 100%; overflow: hidden; }
+
     .sumTable {
-      width:100%;
-      border-collapse:collapse;
-      table-layout:fixed;
-      font-size:22px;
+      width: 100%;
+      height: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 24px; /* увеличили */
     }
+
     .sumTable th, .sumTable td {
-      border:2px solid #222;
-      padding:12px 14px;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
+      border: 2px solid #222;
+      padding: 10px 12px;      /* чуть меньше, чтобы точно влезло */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
+
     .sumHead {
       background:#93c47d;
       color:#000;
-      font-weight:800;
-      text-align:center;
-      font-size:26px;
-      letter-spacing:.2px;
+      font-weight: 900;
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: .2px;
     }
-    .sumLabel { font-weight:800; text-align:center; }
-    .sumVal { text-align:right; font-variant-numeric: tabular-nums; }
+
+    .sumLabel { font-weight: 900; text-align: center; }
+    .sumVal { text-align: right; font-variant-numeric: tabular-nums; font-weight: 900; }
 
     @media (max-width: 900px) {
       .row2 { grid-template-columns: 1fr; }
-      .sumTable { font-size:18px; }
-      .sumHead { font-size:22px; }
-      .xlabel { font-size: 11px; }
+      .sumTable { font-size: 20px; }
+      .sumHead { font-size: 24px; }
     }
   </style>
 </head>
+
 <body>
 <div class="wrap">
   <div class="topbar">
@@ -177,13 +262,14 @@
 
       <div class="card">
         <h2>Team ratings <span class="pill">данные!P18:Q21</span></h2>
-        <div id="sumTableWrap" style="height:100%; overflow:auto;"></div>
+        <div id="sumTableWrap"></div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+  // === Твои данные ===
   const SPREADSHEET_ID = "123_11_j3y3KJhh45yomAOSFp3qP0Un7ePHxjcXQEhfs";
   const GID_DANNYE = "1932060383";
 
@@ -191,8 +277,8 @@
   const RANGE_ENGPL = "C2:D8";
   const RANGE_SUMS  = "P18:Q21";
 
-  const TARGET = 150000;        // цель (линия)
-  const REFRESH_MS = 30000;
+  const TARGET = 150000;     // цель линии
+  const REFRESH_MS = 30000;  // обновление
 
   const statusEl = document.getElementById("status");
   const chartRU = document.getElementById("chartRU");
@@ -275,7 +361,7 @@
     return `hsl(${h} 70% 45%)`;
   }
 
-  // "красивый" максимум оси Y как в графиках: округлить вверх до шага
+  // “красивый” максимум оси Y (как в графиках)
   function niceMax(v) {
     if (v <= 0) return 1;
     const exp = Math.pow(10, Math.floor(Math.log10(v)));
@@ -298,11 +384,10 @@
     items.sort((a,b) => b.value - a.value);
 
     const maxData = Math.max(0, ...items.map(x => x.value));
-    const axisMax = niceMax(maxData);            // как “в старом” — по данным
-    const targetPct = (target / axisMax) * 100;  // линия цели относительно оси
+    const axisMax = niceMax(maxData || 1);
 
-    // если цель слишком высоко (выше axisMax) — покажем её как "выше графика"
     const showTargetInside = target <= axisMax;
+    const targetPct = showTargetInside ? (target / axisMax) * 100 : 100;
 
     const cols = items.length;
 
@@ -310,30 +395,38 @@
       <div class="vchart">
         <div class="cap">
           <div>0</div>
-          <div>MAX (ось): ${escapeHtml(String(axisMax))}${showTargetInside ? "" : ` • ЦЕЛЬ: ${escapeHtml(String(target))}`}</div>
+          <div>MAX (ось): ${escapeHtml(String(axisMax))} • ЦЕЛЬ: ${escapeHtml(String(target))}${showTargetInside ? "" : " (выше)"}</div>
         </div>
+
         <div class="plot">
           ${showTargetInside ? `
             <div class="targetLine" style="bottom:${targetPct}%;"></div>
-            <div class="targetLabel" style="bottom:${targetPct}%; transform: translateY(50%);">ЦЕЛЬ ${escapeHtml(String(target))}</div>
+            <div class="targetLabel" style="bottom:${targetPct}%;">ЦЕЛЬ ${escapeHtml(String(target))}</div>
           ` : `
-            <div class="targetLabel" style="top:10px;">ЦЕЛЬ ${escapeHtml(String(target))} (выше)</div>
+            <div class="targetLabel" style="top:12px; transform:none;">ЦЕЛЬ ${escapeHtml(String(target))} (выше)</div>
           `}
           <div class="columns" id="cols"></div>
         </div>
+
         <div class="xlabels" id="xlabels"></div>
       </div>
     `;
 
     const colsEl = container.querySelector("#cols");
-    const xlabelsEl = container.querySelector("#xlabels");
+    const labelsEl = container.querySelector("#xlabels");
+
     colsEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    xlabelsEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    labelsEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
     colsEl.innerHTML = items.map(it => {
       const pct = Math.max(0, Math.min(100, (it.value / axisMax) * 100));
+
+      // чтобы было наглядно даже при маленьких числах:
+      // минимум 3% для НЕнулевых, и 3% для нулей (тонкая полоска)
+      const heightPct = it.value === 0 ? 3 : Math.max(3, pct);
+
       const col = colorForName(it.name);
-      const heightPct = (it.value === 0) ? 2 : pct;
+
       return `
         <div class="col">
           <div class="val">${escapeHtml(String(it.value))}</div>
@@ -342,7 +435,7 @@
       `;
     }).join("");
 
-    xlabelsEl.innerHTML = items.map(it => {
+    labelsEl.innerHTML = items.map(it => {
       return `<div class="xlabel" title="${escapeHtml(it.name)}">${escapeHtml(it.name)}</div>`;
     }).join("");
   }
@@ -353,6 +446,9 @@
       return;
     }
 
+    // Если вдруг придёт больше 4 строк — всё равно попробуем ужать без скролла
+    const rows = pairs.slice(0, 10);
+
     let html = `
       <table class="sumTable">
         <thead>
@@ -361,7 +457,7 @@
         <tbody>
     `;
 
-    for (const r of pairs) {
+    for (const r of rows) {
       const label = r[0] ?? "";
       const value = toNumber(r[1]);
       html += `
@@ -386,10 +482,8 @@
         fetchRange(GID_DANNYE, RANGE_SUMS),
       ]);
 
-      // ✅ “как у тебя было”: ось по данным + линия цели 150k
       renderVerticalChart(chartRU, ru, TARGET);
       renderVerticalChart(chartENGPL, engpl, TARGET);
-
       renderSumsTable(sums);
 
       const now = new Date();
@@ -400,7 +494,7 @@
     } catch (e) {
       chartRU.innerHTML = `<div class="error">Ошибка RU: ${escapeHtml(e.message)}</div>`;
       chartENGPL.innerHTML = `<div class="error">Ошибка ENG/PL: ${escapeHtml(e.message)}</div>`;
-      sumTableWrap.innerHTML = `<div class="error">Ошибка таблицы сумм: ${escapeHtml(e.message)}</div>`;
+      sumTableWrap.innerHTML = `<div class="error">Ошибка таблицы: ${escapeHtml(e.message)}</div>`;
       setStatus("Ошибка");
     }
   }

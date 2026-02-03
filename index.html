@@ -7,147 +7,123 @@
 
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: #fff;
+      margin:0; padding:0;
+      width:100vw; height:100vh;
+      overflow:hidden;
+      background:#fff;
       font-family: Arial, sans-serif;
     }
-
-    /* Чуть крупнее базовый шрифт под ТВ */
     body { font-size: 18px; }
 
     .wrap { height:100vh; display:flex; flex-direction:column; }
 
-    .topbar {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding: 14px 18px;
-      border-bottom: 1px solid #eee;
+    .topbar{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 18px;
+      border-bottom:1px solid #eee;
     }
+    .title{ font-size:22px; font-weight:800; }
+    .status{ font-size:16px; opacity:.75; white-space:nowrap; }
 
-    .title { font-weight: 800; font-size: 22px; }
-    .status { opacity:.75; font-size: 16px; white-space: nowrap; }
-
-    .grid {
-      flex: 1;
-      display: grid;
+    .grid{
+      flex:1;
+      display:grid;
       grid-template-rows: 2fr 1fr;
-      gap: 14px;
-      padding: 14px 18px;
-      box-sizing: border-box;
-      min-height: 0;
+      gap:14px;
+      padding:14px 18px;
+      box-sizing:border-box;
+      min-height:0;
     }
-
-    .row2 {
-      display: grid;
+    .row2{
+      display:grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      min-height: 0;
+      gap:14px;
+      min-height:0;
     }
 
-    .card {
-      border: 1px solid #eee;
-      border-radius: 14px;
-      padding: 16px;
-      box-sizing: border-box;
-      min-height: 0;
-      overflow: hidden; /* важно: без скролла в карточках */
+    /* card как flex-колонка, чтобы график занимал остаток */
+    .card{
+      border:1px solid #eee;
+      border-radius:14px;
+      padding:14px;
+      box-sizing:border-box;
+      min-height:0;
+      overflow:hidden;
+
+      display:flex;
+      flex-direction:column;
     }
 
-    .card h2 {
-      margin: 0 0 12px 0;
-      font-size: 22px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .card h2{
+      margin:0 0 10px 0;
+      font-size:22px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex: 0 0 auto;
+    }
+    .pill{
+      font-size:14px;
+      padding:3px 10px;
+      border-radius:999px;
+      border:1px solid #eee;
+      background:#fafafa;
     }
 
-    .pill {
-      font-size: 14px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid #eee;
-      background: #fafafa;
+    .chartHost{ flex:1 1 auto; min-height:0; }
+
+    .error{
+      color:#b00020;
+      background:#fff5f7;
+      border:1px solid #ffd7dd;
+      border-radius:12px;
+      padding:14px;
+      font-size:18px;
+      line-height:1.35;
     }
 
-    .error {
-      color: #b00020;
-      background: #fff5f7;
-      border: 1px solid #ffd7dd;
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 18px;
-      line-height: 1.35;
+    /* ========= Вертикальная диаграмма ========= */
+    .vchart{
+      height:100%;
+      display:grid;
+      grid-template-rows: 22px 1fr 92px; /* ↑ больше места под имена */
+      gap:8px;
+      min-height:0;
     }
 
-    /* ========= ВЕРТИКАЛЬНАЯ ДИАГРАММА (без скролла) ========= */
-    .vchart {
-      height: 100%;
-      display: grid;
-      grid-template-rows: 26px 1fr 86px; /* снизу место для имен */
-      gap: 10px;
-      overflow: hidden;
-    }
-
-    .cap {
+    .cap{
       display:flex;
       justify-content:space-between;
       align-items:center;
-      font-size: 16px;
-      opacity: .78;
-      padding: 0 6px;
-      user-select: none;
-      white-space: nowrap;
+      font-size:15px;
+      opacity:.75;
+      padding:0 6px;
+      white-space:nowrap;
+      user-select:none;
     }
 
-    .plot {
-      position: relative;
-      border: 1px solid #eee;
-      border-radius: 12px;
-      overflow: hidden;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
-      background-size: 100% 20%;
+    .plot{
+      position:relative;
+      border:1px solid #eee;
+      border-radius:12px;
+      overflow:hidden;
+      min-height:0;
+
+      background: linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
+      background-size:100% 20%;
     }
 
-    /* линия цели */
-    .targetLine {
+    .columns{
       position:absolute;
-      left:0;
-      right:0;
-      height:2px;
-      background:#e11d48;
-      opacity:0.85;
-      pointer-events:none;
-    }
-    .targetLabel {
-      position:absolute;
-      right:10px;
-      transform: translateY(50%);
-      font-size: 14px;
-      font-weight: 900;
-      color:#e11d48;
-      background: rgba(255,255,255,0.92);
-      padding: 3px 8px;
-      border-radius: 999px;
-      pointer-events:none;
-      white-space: nowrap;
+      inset:10px;
+      display:grid;
+      align-items:stretch;
+      gap:6px;
+      min-height:0;
     }
 
-    /* ВАЖНО: растягиваем сетку на всю высоту, чтобы height:% у bar работал */
-    .columns {
-      position: absolute;
-      inset: 12px;
-      display: grid;
-      align-items: stretch; /* <-- критично */
-      gap: 6px;
-    }
-
-    .col {
-      height: 100%;         /* <-- критично */
+    .col{
+      height:100%;
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -155,88 +131,112 @@
       min-width:0;
     }
 
-    .val {
-      font-size: 14px;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-      margin-bottom: 6px;
-      opacity: .9;
-      user-select:none;
+    .val{
+      font-size:13px;
+      font-weight:800;
+      margin-bottom:4px;
       white-space:nowrap;
+      user-select:none;
     }
 
-    .bar {
-      width: 100%;
-      height: 0%;
-      border-radius: 8px 8px 0 0;
-      transition: height .35s ease;
-      min-height: 3px; /* чтобы нули/малые значения не пропадали */
+    .bar{
+      width:100%;
+      height:0%;
+      border-radius:8px 8px 0 0;
+      transition:height .25s ease;
+      min-height:2px;
     }
 
-    /* подписи снизу — ОДНА СТРОКА */
-    .xlabels {
-      display: grid;
-      gap: 6px;
-      padding: 0 12px;
-      align-items: start;
-      user-select: none;
-      overflow: hidden;
+    /* ====== Имена: НЕ обрезаем, даем больше места и делаем аккуратный наклон ====== */
+    .xlabels{
+      display:grid;
+      gap:6px;
+      padding:0 10px 0 10px;
+      overflow:visible;    /* важно: не скрываем подписи */
+      min-height:0;
     }
 
-    .xlabel {
-      font-weight: 700;
-      text-align: center;
+    .xlabel{
+      white-space:nowrap;
+      overflow:visible;    /* важно: без ... */
+      text-overflow:clip;  /* важно: без ... */
 
-      /* одна строка */
-      white-space: nowrap;
+      font-weight:700;
+      font-size: clamp(10px, 0.85vw, 13px); /* чуть меньше */
+      line-height:1.05;
+      text-align:center;
 
-      /* делаем “красиво и видно”: лёгкий наклон, чтобы поместилось больше */
-      transform: rotate(-28deg);
+      transform: rotate(-15deg); /* меньше наклон — лучше читается */
       transform-origin: top center;
-
-      /* умный размер: на широком экране больше, на узком меньше */
-      font-size: clamp(11px, 1.05vw, 15px);
-      line-height: 1.05;
-
-      /* НЕ обрезаем троеточием, стараемся показать целиком */
-      overflow: visible;
+      user-select:none;
     }
 
-    /* ========= ТАБЛИЦА СУММ (влезает целиком, без скролла) ========= */
-    #sumTableWrap { height: 100%; overflow: hidden; }
-
-    .sumTable {
-      width: 100%;
-      height: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-      font-size: 24px; /* увеличили */
+    /* ===== Цель ===== */
+    .targetLine{
+      position:absolute;
+      left:0; right:0;
+      height:2px;
+      background:#e11d48;
+      opacity:.85;
+      pointer-events:none;
+    }
+    .targetLabel{
+      position:absolute;
+      right:8px;
+      font-size:13px;
+      font-weight:900;
+      color:#e11d48;
+      background:rgba(255,255,255,.92);
+      padding:2px 6px;
+      border-radius:999px;
+      white-space:nowrap;
+      pointer-events:none;
+      transform: translateY(50%);
     }
 
-    .sumTable th, .sumTable td {
-      border: 2px solid #222;
-      padding: 10px 12px;      /* чуть меньше, чтобы точно влезло */
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    /* ========= Таблица сумм: без скролла, 4 строки всегда видны ========= */
+    #sumTableWrap{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:hidden; /* убираем скролл */
     }
 
-    .sumHead {
+    .sumTable{
+      width:100%;
+      height:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:22px;
+    }
+
+    /* фиксируем высоты строк, чтобы 4 строки точно влезли */
+    .sumTable tr { height: 19%; }              /* 1 заголовок + 4 строки */
+    .sumTable thead tr { height: 24%; }
+
+    .sumTable th, .sumTable td{
+      border:2px solid #222;
+      padding:6px 10px;   /* ↓ меньше padding */
+      line-height:1.0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      vertical-align:middle;
+    }
+
+    .sumHead{
       background:#93c47d;
-      color:#000;
-      font-weight: 900;
-      text-align: center;
-      font-size: 28px;
-      letter-spacing: .2px;
+      font-size:24px;
+      font-weight:900;
+      text-align:center;
     }
 
-    .sumLabel { font-weight: 900; text-align: center; }
-    .sumVal { text-align: right; font-variant-numeric: tabular-nums; font-weight: 900; }
+    .sumLabel{ font-weight:900; text-align:center; }
+    .sumVal{ font-weight:900; text-align:right; font-variant-numeric: tabular-nums; }
 
-    @media (max-width: 900px) {
-      .row2 { grid-template-columns: 1fr; }
-      .sumTable { font-size: 20px; }
-      .sumHead { font-size: 24px; }
+    @media (max-width: 900px){
+      .row2{ grid-template-columns:1fr; }
+      .xlabel{ transform: rotate(-20deg); }
+      .sumTable{ font-size:20px; }
     }
   </style>
 </head>
@@ -251,13 +251,13 @@
   <div class="grid">
     <div class="card">
       <h2>RU <span class="pill">данные!G2:H28</span></h2>
-      <div id="chartRU" style="height:100%;"></div>
+      <div id="chartRU" class="chartHost"></div>
     </div>
 
     <div class="row2">
       <div class="card">
         <h2>ENG / PL <span class="pill">данные!C2:D8</span></h2>
-        <div id="chartENGPL" style="height:100%;"></div>
+        <div id="chartENGPL" class="chartHost"></div>
       </div>
 
       <div class="card">
@@ -269,31 +269,25 @@
 </div>
 
 <script>
-  // === Твои данные ===
   const SPREADSHEET_ID = "123_11_j3y3KJhh45yomAOSFp3qP0Un7ePHxjcXQEhfs";
-  const GID_DANNYE = "1932060383";
+  const GID = "1932060383";
 
-  const RANGE_RU    = "G2:H28";
-  const RANGE_ENGPL = "C2:D8";
-  const RANGE_SUMS  = "P18:Q21";
+  const TARGET = 150000;
+  const REFRESH_MS = 30000;
 
-  const TARGET = 150000;     // цель линии
-  const REFRESH_MS = 30000;  // обновление
+  const RANGES = {
+    ru: "G2:H28",
+    engpl: "C2:D8",
+    sums: "P18:Q21",
+  };
 
   const statusEl = document.getElementById("status");
   const chartRU = document.getElementById("chartRU");
   const chartENGPL = document.getElementById("chartENGPL");
   const sumTableWrap = document.getElementById("sumTableWrap");
 
-  function setStatus(t){ statusEl.textContent = t; }
-
-  function escapeHtml(str) {
-    return String(str ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+  function csvUrl(range) {
+    return `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SPREADSHEET_ID)}/export?format=csv&gid=${encodeURIComponent(GID)}&range=${encodeURIComponent(range)}&t=${Date.now()}`;
   }
 
   function parseCSV(text) {
@@ -310,43 +304,38 @@
       if (ch === '"' && inQuotes && next === '"') { cell += '"'; i++; continue; }
       if (ch === '"') { inQuotes = !inQuotes; continue; }
 
-      if (ch === "\n" && !inQuotes) { row.push(cell); rows.push(row); row=[]; cell=""; continue; }
+      if (ch === "\n" && !inQuotes) {
+        row.push(cell); rows.push(row);
+        row = []; cell = "";
+        continue;
+      }
       if (ch === "\r") continue;
 
-      if (ch === "," && !inQuotes) { row.push(cell); cell=""; continue; }
-
+      if (ch === "," && !inQuotes) { row.push(cell); cell = ""; continue; }
       cell += ch;
     }
-    row.push(cell);
-    rows.push(row);
-
-    while (rows.length && rows[rows.length-1].every(v => (v ?? "").trim() === "")) rows.pop();
-    return rows;
-  }
-
-  function toNumber(x) {
-    const s = String(x ?? "").replace(/\s/g, "").replace(",", ".");
-    const n = Number(s);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  function rangeCsvUrl(gid, range) {
-    return `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SPREADSHEET_ID)}/export?format=csv&gid=${encodeURIComponent(gid)}&range=${encodeURIComponent(range)}`;
-  }
-
-  async function fetchRange(gid, range) {
-    const url = rangeCsvUrl(gid, range) + `&t=${Date.now()}`;
-    const resp = await fetch(url, { cache: "no-store" });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const text = await resp.text();
-    const rows = parseCSV(text);
+    row.push(cell); rows.push(row);
 
     return rows
       .map(r => (r || []).map(v => (v ?? "").trim()))
       .filter(r => r.length >= 2 && !(r[0] === "" && r[1] === ""));
   }
 
-  // Цвет по имени (стабильно)
+  function toNumber(v) {
+    const s = String(v ?? "").replace(/\s/g, "").replace(",", ".");
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function esc(s) {
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
   function hashString(s) {
     s = String(s ?? "");
     let h = 2166136261;
@@ -356,12 +345,13 @@
     }
     return h >>> 0;
   }
+
   function colorForName(name) {
     const h = hashString(name) % 360;
     return `hsl(${h} 70% 45%)`;
   }
 
-  // “красивый” максимум оси Y (как в графиках)
+  // ✅ Оставляем “как было красиво”: ось по данным (столбики наглядные)
   function niceMax(v) {
     if (v <= 0) return 1;
     const exp = Math.pow(10, Math.floor(Math.log10(v)));
@@ -374,128 +364,103 @@
     return niceFrac * exp;
   }
 
-  function renderVerticalChart(container, pairs, target) {
-    if (!pairs || pairs.length === 0) {
-      container.innerHTML = `<div class="error">Нет данных для диаграммы.</div>`;
-      return;
-    }
-
+  function renderVerticalChart(container, pairs) {
     let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
     items.sort((a,b) => b.value - a.value);
 
     const maxData = Math.max(0, ...items.map(x => x.value));
     const axisMax = niceMax(maxData || 1);
 
-    const showTargetInside = target <= axisMax;
-    const targetPct = showTargetInside ? (target / axisMax) * 100 : 100;
-
-    const cols = items.length;
+    const showTargetInside = TARGET <= axisMax;
+    const targetPct = showTargetInside ? (TARGET / axisMax) * 100 : 100;
 
     container.innerHTML = `
       <div class="vchart">
         <div class="cap">
           <div>0</div>
-          <div>MAX (ось): ${escapeHtml(String(axisMax))} • ЦЕЛЬ: ${escapeHtml(String(target))}${showTargetInside ? "" : " (выше)"}</div>
+          <div>MAX (ось): ${esc(axisMax)} • ЦЕЛЬ ${esc(TARGET)}${showTargetInside ? "" : " (выше)"}</div>
         </div>
 
         <div class="plot">
           ${showTargetInside ? `
             <div class="targetLine" style="bottom:${targetPct}%;"></div>
-            <div class="targetLabel" style="bottom:${targetPct}%;">ЦЕЛЬ ${escapeHtml(String(target))}</div>
+            <div class="targetLabel" style="bottom:${targetPct}%;">ЦЕЛЬ ${esc(TARGET)}</div>
           ` : `
-            <div class="targetLabel" style="top:12px; transform:none;">ЦЕЛЬ ${escapeHtml(String(target))} (выше)</div>
+            <div class="targetLabel" style="top:10px; transform:none;">ЦЕЛЬ ${esc(TARGET)} (выше)</div>
           `}
-          <div class="columns" id="cols"></div>
+          <div class="columns"></div>
         </div>
 
-        <div class="xlabels" id="xlabels"></div>
+        <div class="xlabels"></div>
       </div>
     `;
 
-    const colsEl = container.querySelector("#cols");
-    const labelsEl = container.querySelector("#xlabels");
+    const colsEl = container.querySelector(".columns");
+    const labelsEl = container.querySelector(".xlabels");
 
-    colsEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    labelsEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    colsEl.style.gridTemplateColumns = `repeat(${items.length}, 1fr)`;
+    labelsEl.style.gridTemplateColumns = `repeat(${items.length}, 1fr)`;
 
     colsEl.innerHTML = items.map(it => {
       const pct = Math.max(0, Math.min(100, (it.value / axisMax) * 100));
-
-      // чтобы было наглядно даже при маленьких числах:
-      // минимум 3% для НЕнулевых, и 3% для нулей (тонкая полоска)
-      const heightPct = it.value === 0 ? 3 : Math.max(3, pct);
-
-      const col = colorForName(it.name);
-
+      const h = it.value === 0 ? 2 : Math.max(2, pct);
       return `
         <div class="col">
-          <div class="val">${escapeHtml(String(it.value))}</div>
-          <div class="bar" style="height:${heightPct}%; background:${col};"></div>
+          <div class="val">${esc(it.value)}</div>
+          <div class="bar" style="height:${h}%; background:${colorForName(it.name)};"></div>
         </div>
       `;
     }).join("");
 
-    labelsEl.innerHTML = items.map(it => {
-      return `<div class="xlabel" title="${escapeHtml(it.name)}">${escapeHtml(it.name)}</div>`;
-    }).join("");
+    labelsEl.innerHTML = items.map(it =>
+      `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`
+    ).join("");
   }
 
   function renderSumsTable(pairs) {
-    if (!pairs || pairs.length === 0) {
-      sumTableWrap.innerHTML = `<div class="error">Нет данных для таблицы сумм.</div>`;
-      return;
-    }
+    const rows = pairs.slice(0, 4).map(r => [r[0] ?? "", toNumber(r[1])]);
 
-    // Если вдруг придёт больше 4 строк — всё равно попробуем ужать без скролла
-    const rows = pairs.slice(0, 10);
-
-    let html = `
+    sumTableWrap.innerHTML = `
       <table class="sumTable">
         <thead>
           <tr><th class="sumHead" colspan="2">Team ratings 📊</th></tr>
         </thead>
         <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td class="sumLabel">${esc(r[0])}</td>
+              <td class="sumVal">${esc(r[1])}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
     `;
-
-    for (const r of rows) {
-      const label = r[0] ?? "";
-      const value = toNumber(r[1]);
-      html += `
-        <tr>
-          <td class="sumLabel">${escapeHtml(label)}</td>
-          <td class="sumVal">${escapeHtml(String(value))}</td>
-        </tr>
-      `;
-    }
-
-    html += `</tbody></table>`;
-    sumTableWrap.innerHTML = html;
   }
 
   async function loadAll() {
     try {
-      setStatus("Обновление…");
+      statusEl.textContent = "Загрузка…";
 
-      const [ru, engpl, sums] = await Promise.all([
-        fetchRange(GID_DANNYE, RANGE_RU),
-        fetchRange(GID_DANNYE, RANGE_ENGPL),
-        fetchRange(GID_DANNYE, RANGE_SUMS),
+      const [ruText, engplText, sumsText] = await Promise.all([
+        fetch(csvUrl(RANGES.ru), { cache:"no-store" }).then(r => r.text()),
+        fetch(csvUrl(RANGES.engpl), { cache:"no-store" }).then(r => r.text()),
+        fetch(csvUrl(RANGES.sums), { cache:"no-store" }).then(r => r.text()),
       ]);
 
-      renderVerticalChart(chartRU, ru, TARGET);
-      renderVerticalChart(chartENGPL, engpl, TARGET);
+      const ru = parseCSV(ruText);
+      const engpl = parseCSV(engplText);
+      const sums = parseCSV(sumsText);
+
+      renderVerticalChart(chartRU, ru);
+      renderVerticalChart(chartENGPL, engpl);
       renderSumsTable(sums);
 
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2,"0");
-      const mm = String(now.getMinutes()).padStart(2,"0");
-      const ss = String(now.getSeconds()).padStart(2,"0");
-      setStatus(`Обновлено: ${hh}:${mm}:${ss}`);
+      statusEl.textContent = "Обновлено: " + new Date().toLocaleTimeString();
     } catch (e) {
-      chartRU.innerHTML = `<div class="error">Ошибка RU: ${escapeHtml(e.message)}</div>`;
-      chartENGPL.innerHTML = `<div class="error">Ошибка ENG/PL: ${escapeHtml(e.message)}</div>`;
-      sumTableWrap.innerHTML = `<div class="error">Ошибка таблицы: ${escapeHtml(e.message)}</div>`;
-      setStatus("Ошибка");
+      chartRU.innerHTML = `<div class="error">${esc(e.message)}</div>`;
+      chartENGPL.innerHTML = `<div class="error">${esc(e.message)}</div>`;
+      sumTableWrap.innerHTML = `<div class="error">${esc(e.message)}</div>`;
+      statusEl.textContent = "Ошибка";
     }
   }
 

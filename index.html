@@ -86,9 +86,7 @@
     .vchart{
       height:100%;
       display:grid;
-
-      /* ↓ ДАЛИ БОЛЬШЕ МЕСТА ПОД ИМЕНА */
-      grid-template-rows: 22px 1fr 130px;  /* было ~90px */
+      grid-template-rows: 22px 1fr 150px; /* <-- подписи будут внизу */
       gap:8px;
       min-height:0;
     }
@@ -152,24 +150,28 @@
     .xlabels{
       display:grid;
       gap:6px;
-      padding:0 10px;
-      overflow:visible;
-      min-height:0;
+      padding: 0 10px;
+      overflow: visible;     /* можно выходить вниз */
+      align-items: end;      /* подписи внизу зоны */
     }
 
     .xlabel{
+      display:block;
+      width:100%;
+      text-align:center;
+    
       white-space:nowrap;
       overflow:visible;
       text-overflow:clip;
-
+    
       font-weight:800;
       font-size: clamp(11px, 0.95vw, 14px);
       line-height:1.05;
-      text-align:center;
-
-      /* ↓ Сильнее наклон — влезают длинные фамилии */
-      transform: rotate(-55deg);
-      transform-origin: top center;
+    
+      /* ВАЖНО: вращаем от НИЗА, чтобы подпись "висела" вниз */
+      transform: rotate(-55deg) translateY(6px);
+      transform-origin: bottom center;
+    
       user-select:none;
     }
 
@@ -469,3 +471,4 @@
 </script>
 </body>
 </html>
+

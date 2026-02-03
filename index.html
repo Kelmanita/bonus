@@ -90,6 +90,9 @@
       gap:8px;
     }
 
+    .vwrap.compact{
+      grid-template-rows: 22px 1fr 140px;  /* было 90/120 — делаем больше */
+    }
 
     .cap{
       display:flex;
@@ -147,6 +150,11 @@
       overflow: visible;
       align-items: center;
     }
+
+    .xlabels.compact{
+      padding-top: 18px;   /* было 6px — опускаем ниже */
+    }
+    
     .xlabel{
       display:block;
       width:100%;
@@ -175,8 +183,6 @@
       transform: translateX(-2px) rotate(-60deg); /* убираем translateX, он портит центр */
       transform-origin: center;
     }
-
-
 
     /* ========= Таблица сумм ========= */
     #sumTableWrap{
@@ -394,7 +400,7 @@
     const targetPct = showTargetInside ? (TARGET / axisMax) * 100 : 100;
 
     container.innerHTML = `
-      <div class="vwrap">
+      <div class="vwrap ${compact ? "compact" : ""}">
         <div class="cap">
           <div>0</div>
           <div>MAX (ось): ${esc(axisMax)} • ЦЕЛЬ ${esc(TARGET)}${showTargetInside ? "" : " (выше)"}</div>
@@ -544,6 +550,7 @@
 </script>
 </body>
 </html>
+
 
 
 

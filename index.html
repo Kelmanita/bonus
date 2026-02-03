@@ -86,7 +86,7 @@
     .vchart{
       height:100%;
       display:grid;
-      grid-template-rows: 22px 1fr 75px; /* <-- подписи будут внизу */
+      grid-template-rows: 22px 1fr 110px; /* <-- подписи будут внизу */
       gap:8px;
       min-height:0;
     }
@@ -150,7 +150,7 @@
     .xlabels{
       display:grid;
       gap:6px;
-      padding: 0 10px;
+      padding: 0 10px 12px 10px;
       overflow: visible;     /* можно выходить вниз */
       align-items: end;      /* подписи внизу зоны */
     }
@@ -169,7 +169,7 @@
       line-height:1.05;
     
       /* ВАЖНО: вращаем от НИЗА, чтобы подпись "висела" вниз */
-      transform: rotate(-40deg);        /* было -55 */
+      transform: rotate(-35deg);        /* было -55 */
       transform-origin: bottom center;  /* держим низом */
       user-select:none;
     }
@@ -470,6 +470,7 @@
 </script>
 </body>
 </html>
+
 
 
 

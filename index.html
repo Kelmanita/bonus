@@ -101,7 +101,7 @@
     }
     
     .vchart.compact .col{
-      width: 100px;                 /* ширина “колонки” */
+      min-width: 100px;                 /* ширина “колонки” */
     }
     
     .vchart.compact .bar{
@@ -162,58 +162,57 @@
       position: relative;
       height: 0%;
       min-height: 2px;
-    
-      /* ВАЖНО: цвет берётся из inline background (hsl) */
       border-radius: 6px 6px 2px 2px;
     
-      /* лёгкая тень как у Excel */
-      box-shadow: 0 8px 0 rgba(0,0,0,0.14);
-    
-      /* делаем “объём”, но не убиваем цвет */
+      /* цвет приходит из inline background-color */
       background-image:
-        linear-gradient(to right, rgba(255,255,255,0.28), rgba(0,0,0,0.18));
+        linear-gradient(to right, rgba(255,255,255,0.22), rgba(0,0,0,0.18));
       background-blend-mode: overlay;
+    
+      box-shadow: 0 6px 0 rgba(0,0,0,0.12);
     }
     
-    /* Верхняя грань */
+    /* верхняя грань — меньше */
     .bar::before{
       content:"";
       position:absolute;
       left: 0;
-      right: 10px;
-      top: -10px;
-      height: 10px;
-    
-      /* подсветка сверху (НЕ перекрывает цвет полностью) */
-      background: rgba(255,255,255,0.28);
-    
-      /* форма “крышки” */
-      clip-path: polygon(0 100%, 10px 0, 100% 0, calc(100% - 10px) 100%);
+      right: 6px;
+      top: -6px;
+      height: 6px;
+      background: rgba(255,255,255,0.22);
+      clip-path: polygon(0 100%, 6px 0, 100% 0, calc(100% - 6px) 100%);
       border-radius: 6px 6px 0 0;
-    
       pointer-events:none;
     }
     
-    /* Правая боковая грань */
+    /* правая грань — меньше */
     .bar::after{
       content:"";
       position:absolute;
-      top: -10px;
-      right: -10px;
-      width: 10px;
-      height: calc(100% + 10px);
-    
-      /* затемнение боковой грани */
-      background: rgba(0,0,0,0.22);
-    
-      clip-path: polygon(0 0, 100% 10px, 100% 100%, 0 calc(100% - 10px));
+      top: -6px;
+      right: -6px;
+      width: 6px;
+      height: calc(100% + 6px);
+      background: rgba(0,0,0,0.18);
+      clip-path: polygon(0 0, 100% 6px, 100% 100%, 0 calc(100% - 6px));
       border-radius: 0 6px 2px 0;
-    
       pointer-events:none;
+    }
+    
+    /* Для маленьких столбиков отключаем “крышки”, иначе клинья */
+    .bar.tiny::before,
+    .bar.tiny::after{
+      display:none;
+    }
+    .bar.tiny{
+      box-shadow:none;
+      background-image:none; /* чистый цвет */
+      border-radius: 999px;  /* как “палочка” */
     }
 
     /* нижняя “платформа” как в старых диаграммах */
-    .plot::after{
+    /*.plot::after{
       content:"";
       position:absolute;
       left: 10px;
@@ -223,7 +222,7 @@
       background: linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.02));
       border-radius: 999px;
       pointer-events:none;
-    }
+    }*/
 
     /* ====== Имена: 1 строка, без сокращений. Делаем наклон сильнее и больше высоты ====== */
     .xlabels{
@@ -487,7 +486,7 @@
       return `
         <div class="col">
           <div class="val">${esc(it.value)}</div>
-          <div class="bar" style="height:${h}%; background-color:${colorForName(it.name)};"></div>
+          <div class="bar ${h < 8 ? "tiny" : ""}" style="height:${h}%; background-color:${colorForName(it.name)};"></div>
         </div>
       `;
     }).join("");
@@ -549,6 +548,7 @@
 </script>
 </body>
 </html>
+
 
 
 

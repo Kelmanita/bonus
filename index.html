@@ -1,56 +1,326 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bonus</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Team ratings</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+      background: #ffffff;
+      font-family: Arial, sans-serif;
+    }
 
-    <style>
-        /* Сброс и фиксация viewport для ТВ */
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background: #ffffff;
-        }
+    .wrap {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-        /* iframe всегда во весь экран */
-        iframe {
-            border: none;
-            width: 100vw;
-            height: 100vh;
-            display: block;
-        }
-    </style>
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      font-size: 18px;
+    }
+    .title { font-weight: 700; }
+    .status { opacity: 0.75; font-size: 16px; white-space: nowrap; }
+
+    .grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr; /* слева диаграмма, справа таблица */
+      gap: 14px;
+      padding: 14px 16px;
+      box-sizing: border-box;
+      min-height: 0;
+    }
+
+    .card {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 14px;
+      box-sizing: border-box;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* Диаграмма */
+    .chart {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      height: 100%;
+      overflow: auto;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 220px 1fr 90px;
+      gap: 12px;
+      align-items: center;
+      font-size: 18px;
+    }
+
+    .name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .barwrap {
+      height: 18px;
+      background: #f2f2f2;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: #111; /* не задаю цветом стиль, но чёрный стабильнее */
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+
+    .val {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* Таблица */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 18px;
+    }
+    th, td {
+      border: 1px solid #eee;
+      padding: 10px 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    th {
+      background: #f7f7f7;
+      font-weight: 700;
+    }
+
+    .error {
+      color: #b00020;
+      background: #fff5f7;
+      border: 1px solid #ffd7dd;
+      border-radius: 10px;
+      padding: 12px;
+      line-height: 1.35;
+      font-size: 16px;
+    }
+
+    /* На очень узких экранах можно сделать столбиком */
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr 1fr 80px; }
+    }
+  </style>
 </head>
 <body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="title">Team ratings</div>
+    <div class="status" id="status">Загрузка…</div>
+  </div>
 
-    <!-- iframe без src, чтобы загрузить позже -->
-    <iframe id="sheetFrame"
-            frameborder="0"
-            scrolling="no"
-            title="Google Spreadsheet">
-    </iframe>
+  <div class="grid">
+    <div class="card">
+      <div style="font-weight:700; font-size:18px; margin-bottom:10px;">Диаграмма</div>
+      <div class="chart" id="chart"></div>
+    </div>
 
-    <script>
-        // Ссылка на Google Sheets
-        const SHEET_URL =
-            "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9g6_S-GrBLE3-sgiDv_GmTony1aw-RLicAAgBm1uB_TMJJs9Y5djjv8u67Pu82kmKDq4aHlcMzsso/pubhtml?gid=1345331115&single=true";
+    <div class="card">
+      <div style="font-weight:700; font-size:18px; margin-bottom:10px;">Таблица</div>
+      <div id="tableWrap" style="height:100%; overflow:auto;"></div>
+    </div>
+  </div>
+</div>
 
-        // Задержка нужна для Smart TV, чтобы viewport успел рассчитаться
-        setTimeout(() => {
-            const iframe = document.getElementById("sheetFrame");
-            iframe.src = SHEET_URL;
+<script>
+  // ✅ ТВОЯ CSV-ссылка
+  const CSV_URL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9g6_S-GrBLE3-sgiDv_GmTony1aw-RLicAAgBm1uB_TMJJs9Y5djjv8u67Pu82kmKDq4aHlcMzsso/pub?gid=1345331115&single=true&output=csv";
 
-            // Дополнительно пинаем resize — Google Sheets это любит
-            setTimeout(() => {
-                window.dispatchEvent(new Event("resize"));
-            }, 500);
+  // ✅ Как часто обновлять (мс)
+  const REFRESH_MS = 30000; // 30 секунд
 
-        }, 800); // 500–1000 мс — оптимально для ТВ
-    </script>
+  const statusEl = document.getElementById("status");
+  const chartEl  = document.getElementById("chart");
+  const tableWrap = document.getElementById("tableWrap");
 
+  function setStatus(t){ statusEl.textContent = t; }
+
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  // CSV парсер (под Google Sheets)
+  function parseCSV(text) {
+    // убираем BOM, если есть
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+    const rows = [];
+    let row = [];
+    let cell = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      const next = text[i + 1];
+
+      if (ch === '"' && inQuotes && next === '"') { cell += '"'; i++; continue; }
+      if (ch === '"') { inQuotes = !inQuotes; continue; }
+
+      if (ch === "\n" && !inQuotes) {
+        row.push(cell); rows.push(row);
+        row = []; cell = "";
+        continue;
+      }
+      if (ch === "\r") continue;
+
+      if (ch === "," && !inQuotes) { row.push(cell); cell = ""; continue; }
+
+      cell += ch;
+    }
+    row.push(cell);
+    rows.push(row);
+
+    // убрать пустые хвосты
+    while (rows.length && rows[rows.length-1].every(v => (v ?? "").trim() === "")) rows.pop();
+
+    return rows;
+  }
+
+  function normalizeRows(rows) {
+    if (!rows || rows.length < 2) return { header: [], data: [] };
+
+    const header = rows[0].map(h => (h ?? "").trim());
+    const data = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      // пропускаем пустые строки
+      if (!r || r.every(v => (v ?? "").trim() === "")) continue;
+
+      // добиваем до длины заголовка
+      const rr = [];
+      for (let c = 0; c < header.length; c++) rr.push((r[c] ?? "").trim());
+      data.push(rr);
+    }
+    return { header, data };
+  }
+
+  function toNumber(x) {
+    // на случай "11 928" или "11,928"
+    const s = String(x ?? "").replace(/\s/g, "").replace(",", ".");
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function renderTable(header, data) {
+    if (!header.length) {
+      tableWrap.innerHTML = `<div class="error">Нет данных для таблицы (CSV пустой или нет заголовков).</div>`;
+      return;
+    }
+
+    let html = "<table><thead><tr>";
+    for (const h of header) html += `<th>${escapeHtml(h)}</th>`;
+    html += "</tr></thead><tbody>";
+
+    for (const r of data) {
+      html += "<tr>";
+      for (let i = 0; i < header.length; i++) html += `<td>${escapeHtml(r[i] ?? "")}</td>`;
+      html += "</tr>";
+    }
+
+    html += "</tbody></table>";
+    tableWrap.innerHTML = html;
+  }
+
+  function renderBars(header, data) {
+    // ожидаем, что первая колонка — название, вторая — число (как у тебя)
+    if (header.length < 2) {
+      chartEl.innerHTML = `<div class="error">Для диаграммы нужно минимум 2 колонки: название и значение.</div>`;
+      return;
+    }
+
+    // соберём пары name/value
+    const items = data.map(r => ({
+      name: r[0] ?? "",
+      value: toNumber(r[1])
+    }));
+
+    // сортировка по убыванию значения
+    items.sort((a, b) => b.value - a.value);
+
+    const maxVal = Math.max(1, ...items.map(x => x.value));
+
+    // рисуем
+    let html = "";
+    for (const it of items) {
+      const pct = Math.max(0, Math.min(100, (it.value / maxVal) * 100));
+      html += `
+        <div class="row">
+          <div class="name">${escapeHtml(it.name)}</div>
+          <div class="barwrap"><div class="bar" style="width:${pct}%;"></div></div>
+          <div class="val">${escapeHtml(it.value)}</div>
+        </div>
+      `;
+    }
+    chartEl.innerHTML = html;
+  }
+
+  async function loadAndRender() {
+    try {
+      setStatus("Обновление…");
+
+      // анти-кэш, чтобы ТВ не залипал
+      const url = CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now();
+
+      const resp = await fetch(url, { cache: "no-store" });
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+
+      const text = await resp.text();
+      const rows = parseCSV(text);
+      const { header, data } = normalizeRows(rows);
+
+      renderTable(header, data);
+      renderBars(header, data);
+
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,"0");
+      const mm = String(now.getMinutes()).padStart(2,"0");
+      const ss = String(now.getSeconds()).padStart(2,"0");
+      setStatus(`Обновлено: ${hh}:${mm}:${ss}`);
+    } catch (e) {
+      chartEl.innerHTML = `<div class="error">Не удалось загрузить данные.<br>Ошибка: ${escapeHtml(e.message)}</div>`;
+      tableWrap.innerHTML = `<div class="error">Проверь, что таблица опубликована и ссылка доступна без авторизации.</div>`;
+      setStatus("Ошибка");
+    }
+  }
+
+  loadAndRender();
+  setInterval(loadAndRender, REFRESH_MS);
+</script>
 </body>
 </html>

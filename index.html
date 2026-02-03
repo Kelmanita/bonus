@@ -35,10 +35,9 @@
       min-height:0;
     }
 
-    /* ↓ ВАЖНО: делаем таблицу уже, диаграмму шире (чтобы имена влезали) */
     .row2{
       display:grid;
-      grid-template-columns: 1.35fr 0.65fr; /* было 1fr 1fr */
+      grid-template-columns: 1.35fr 0.65fr;
       gap:14px;
       min-height:0;
     }
@@ -72,40 +71,13 @@
 
     .chartHost{ flex:1 1 auto; min-height:0; }
 
-    .error{
-      color:#b00020;
-      background:#fff5f7;
-      border:1px solid #ffd7dd;
-      border-radius:12px;
-      padding:14px;
-      font-size:18px;
-      line-height:1.35;
-    }
-
-    /* ========= Вертикальная диаграмма ========= */
-    .vchart{
+    /* ==== Chart wrapper ==== */
+    .vwrap{
       height:100%;
       display:grid;
-      grid-template-rows: 22px 1fr 85px; /* <-- подписи будут внизу */
+      grid-template-rows: 22px 1fr 90px;
       gap:8px;
       min-height:0;
-    }
-
-    /* ENG/PL: узкие столбики по ширине */
-    .vchart.compact .columns{
-      display:flex !important;
-      justify-content:center;
-      align-items:flex-end;
-      gap:22px;
-      padding: 0 40px;
-    }
-    
-    .vchart.compact .col{
-      min-width: 100px;                 /* ширина “колонки” */
-    }
-    
-    .vchart.compact .bar{
-      width: 65px;                 /* ширина самого столбика */
     }
 
     .cap{
@@ -124,143 +96,17 @@
       border:1px solid #eee;
       border-radius:12px;
       overflow:hidden;
-      min-height:0;
-      background: linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
       background-size:100% 20%;
     }
 
-    .columns{
-      position:absolute;
-      inset:10px;
-      display:grid;
-      align-items:stretch;
-      gap:6px;
-      min-height:0;
-    }
-
-    .col{
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:flex-end;
-      min-width:0;
-    }
-
-    .val{
-      font-size:13px;
-      font-weight:800;
-      margin-bottom:4px;
-      white-space:nowrap;
-      user-select:none;
-    }
-
-    /* === 3D олдскул-столбики === */
-    /* ===== 3D Oldschool bar (Excel-like) ===== */
-    /* ===== 3D Oldschool bar (цвет сохраняется!) ===== */
-    .bar{
-      position: relative;
-      height: 0%;
-      min-height: 2px;
-      border-radius: 6px 6px 2px 2px;
-    
-      /* цвет приходит из inline background-color */
-      background-image:
-        linear-gradient(to right, rgba(255,255,255,0.22), rgba(0,0,0,0.18));
-      background-blend-mode: overlay;
-    
-      box-shadow: 0 6px 0 rgba(0,0,0,0.12);
-    }
-    
-    /* верхняя грань — меньше */
-    .bar::before{
-      content:"";
-      position:absolute;
-      left: 0;
-      right: 6px;
-      top: -6px;
-      height: 6px;
-      background: rgba(255,255,255,0.22);
-      clip-path: polygon(0 100%, 6px 0, 100% 0, calc(100% - 6px) 100%);
-      border-radius: 6px 6px 0 0;
-      pointer-events:none;
-    }
-    
-    /* правая грань — меньше */
-    .bar::after{
-      content:"";
-      position:absolute;
-      top: -6px;
-      right: -6px;
-      width: 6px;
-      height: calc(100% + 6px);
-      background: rgba(0,0,0,0.18);
-      clip-path: polygon(0 0, 100% 6px, 100% 100%, 0 calc(100% - 6px));
-      border-radius: 0 6px 2px 0;
-      pointer-events:none;
-    }
-    
-    /* Для маленьких столбиков отключаем “крышки”, иначе клинья */
-    .bar.tiny::before,
-    .bar.tiny::after{
-      display:none;
-    }
-    .bar.tiny{
-      box-shadow:none;
-      background-image:none; /* чистый цвет */
-      border-radius: 999px;  /* как “палочка” */
-    }
-
-    /* нижняя “платформа” как в старых диаграммах */
-    /*.plot::after{
-      content:"";
-      position:absolute;
-      left: 10px;
-      right: 10px;
-      bottom: 10px;
-      height: 12px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.02));
-      border-radius: 999px;
-      pointer-events:none;
-    }*/
-
-    /* ====== Имена: 1 строка, без сокращений. Делаем наклон сильнее и больше высоты ====== */
-    .xlabels{
-      display:grid;
-      gap:6px;
-      padding: 6px 10px 0px 10px;
-      overflow: visible;     /* можно выходить вниз */
-      align-items: center;      /* подписи внизу зоны */
-    }
-
-    .xlabel{
-      display:block;
+    canvas{
       width:100%;
-      text-align:center;
-    
-      white-space:nowrap;
-      overflow:visible;
-      text-overflow:clip;
-    
-      font-weight:900;
-      font-size: clamp(12px, 1.05vw, 15px);
-      line-height:1.05;
-    
-      /* ВАЖНО: вращаем от НИЗА, чтобы подпись "висела" вниз */
-      transform: translateX(-6px) rotate(-60deg);        /* было -55 */
-      transform-origin: top center;  /* держим низом */
-      user-select:none;
+      height:100%;
+      display:block;
     }
 
-    /* ===== Цель ===== */
-    .targetLine{
-      position:absolute;
-      left:0; right:0;
-      height:2px;
-      background:#e11d48;
-      opacity:.85;
-      pointer-events:none;
-    }
     .targetLabel{
       position:absolute;
       right:8px;
@@ -272,14 +118,54 @@
       border-radius:999px;
       white-space:nowrap;
       pointer-events:none;
-      transform: translateY(50%);
+    }
+    .targetLine{
+      position:absolute;
+      left:0; right:0;
+      height:2px;
+      background:#e11d48;
+      opacity:.85;
+      pointer-events:none;
     }
 
-    /* ========= Таблица сумм: без скролла ========= */
+    /* ==== Labels ==== */
+    .xlabels{
+      display:grid;
+      gap:6px;
+      padding: 6px 10px 0px 10px;
+      overflow: visible;
+      align-items: center;
+    }
+    .xlabel{
+      display:block;
+      width:100%;
+      text-align:center;
+      white-space:nowrap;
+      font-weight:900;
+      font-size: 14px;
+      line-height:1.05;
+
+      transform: translateX(-6px) rotate(-60deg);
+      transform-origin: center;
+      user-select:none;
+    }
+
+    /* ==== ENG/PL: узкие столбики по ширине (только лейблы и расчёты, canvas сам рисует) ==== */
+    .xlabels.compact{
+      display:flex;
+      justify-content:center;
+      gap:40px;
+      padding: 6px 30px 0 30px;
+    }
+    .xlabels.compact .xlabel{
+      width:auto;
+    }
+
+    /* ========= Таблица сумм ========= */
     #sumTableWrap{
       flex:1 1 auto;
       min-height:0;
-      overflow:hidden; /* убираем скролл */
+      overflow:hidden;
     }
 
     .sumTable{
@@ -287,8 +173,6 @@
       height:100%;
       border-collapse:collapse;
       table-layout:fixed;
-
-      /* чуть меньше, чтобы точно влезли 4 строки */
       font-size:18px;
     }
 
@@ -314,8 +198,6 @@
 
     @media (max-width: 900px){
       .row2{ grid-template-columns:1fr; }
-      .vchart{ grid-template-rows: 22px 1fr 140px; }
-      .xlabel{ transform: rotate(-60deg); }
     }
   </style>
 </head>
@@ -353,6 +235,12 @@
 
   const TARGET = 150000;
   const REFRESH_MS = 30000;
+
+  // === ВЫБЕРИ РЕЖИМ ВИДИМОСТИ МАЛЫХ ЗНАЧЕНИЙ ===
+  // true = “как Excel наглядно” (малые значения видны минимум 1.2% высоты)
+  // false = строго честная пропорция
+  const MAKE_SMALL_VALUES_VISIBLE = true;
+  const MIN_VISIBLE_PCT = 1.2;   // минимальная видимая высота столбика в %
 
   const RANGES = {
     ru: "G2:H28",
@@ -430,7 +318,6 @@
     return `hsl(${h} 70% 45%)`;
   }
 
-  // Ось по данным (как тебе нравится — столбики наглядные)
   function niceMax(v) {
     if (v <= 0) return 1;
     const exp = Math.pow(10, Math.floor(Math.log10(v)));
@@ -443,7 +330,43 @@
     return niceFrac * exp;
   }
 
-  function renderVerticalChart(container, pairs, opts = {}) {
+  function draw3DBar(ctx, x, y, w, h, color) {
+    // “Excel-like” 3D: front + top + side
+    const depth = Math.min(10, Math.max(4, w * 0.18));
+    const top = Math.min(10, Math.max(4, w * 0.18));
+
+    // front
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+
+    // top face (lighter)
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + top, y - top);
+    ctx.lineTo(x + w, y - top);
+    ctx.lineTo(x + w - top, y);
+    ctx.closePath();
+    ctx.fill();
+
+    // side face (darker)
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    ctx.beginPath();
+    ctx.moveTo(x + w, y);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x + w + depth, y + h - top);
+    ctx.lineTo(x + w + depth, y - top);
+    ctx.closePath();
+    ctx.fill();
+
+    // shadow
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    ctx.fillRect(x, y + h, w, 6);
+  }
+
+  function renderCanvasChart(container, pairs, opts = {}) {
+    const compact = !!opts.compact;
+
     let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
     items.sort((a,b) => b.value - a.value);
 
@@ -454,7 +377,7 @@
     const targetPct = showTargetInside ? (TARGET / axisMax) * 100 : 100;
 
     container.innerHTML = `
-      <div class="vchart ${opts.compact ? "compact" : ""}">
+      <div class="vwrap">
         <div class="cap">
           <div>0</div>
           <div>MAX (ось): ${esc(axisMax)} • ЦЕЛЬ ${esc(TARGET)}${showTargetInside ? "" : " (выше)"}</div>
@@ -463,37 +386,93 @@
         <div class="plot">
           ${showTargetInside ? `
             <div class="targetLine" style="bottom:${targetPct}%;"></div>
-            <div class="targetLabel" style="bottom:${targetPct}%;">ЦЕЛЬ ${esc(TARGET)}</div>
+            <div class="targetLabel" style="bottom:${targetPct}%; transform:translateY(50%);">ЦЕЛЬ ${esc(TARGET)}</div>
           ` : `
             <div class="targetLabel" style="top:10px; transform:none;">ЦЕЛЬ ${esc(TARGET)} (выше)</div>
           `}
-          <div class="columns"></div>
+          <canvas></canvas>
         </div>
 
-        <div class="xlabels"></div>
+        <div class="xlabels ${compact ? "compact" : ""}"></div>
       </div>
     `;
 
-    const colsEl = container.querySelector(".columns");
+    const plot = container.querySelector(".plot");
+    const canvas = container.querySelector("canvas");
     const labelsEl = container.querySelector(".xlabels");
 
-    colsEl.style.gridTemplateColumns = `repeat(${items.length}, 1fr)`;
-    labelsEl.style.gridTemplateColumns = `repeat(${items.length}, 1fr)`;
+    // labels
+    if (compact) {
+      labelsEl.innerHTML = items.map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`).join("");
+    } else {
+      labelsEl.style.gridTemplateColumns = `repeat(${items.length}, 1fr)`;
+      labelsEl.innerHTML = items.map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`).join("");
+    }
 
-    colsEl.innerHTML = items.map(it => {
-      const pct = Math.max(0, Math.min(100, (it.value / axisMax) * 100));
-      const h = it.value === 0 ? 2 : Math.max(2, pct);
-      return `
-        <div class="col">
-          <div class="val">${esc(it.value)}</div>
-          <div class="bar ${h < 8 ? "tiny" : ""}" style="height:${h}%; background-color:${colorForName(it.name)};"></div>
-        </div>
-      `;
-    }).join("");
+    function redraw() {
+      const rect = plot.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
 
-    labelsEl.innerHTML = items.map(it =>
-      `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`
-    ).join("");
+      canvas.width = Math.floor(rect.width * dpr);
+      canvas.height = Math.floor(rect.height * dpr);
+      canvas.style.width = rect.width + "px";
+      canvas.style.height = rect.height + "px";
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.clearRect(0,0,rect.width,rect.height);
+
+      // layout paddings inside plot
+      const padL = 14, padR = 22, padT = 14, padB = 22;
+      const W = rect.width - padL - padR;
+      const H = rect.height - padT - padB;
+
+      // platform (oldschool)
+      ctx.fillStyle = "rgba(0,0,0,0.06)";
+      ctx.fillRect(padL, padT + H + 6, W, 10);
+
+      // bar sizing
+      const n = items.length;
+      const gap = compact ? 40 : 8;
+      const barW = compact ? 48 : Math.max(10, Math.floor((W - gap*(n-1)) / n));
+      const totalW = compact ? (n * barW + (n-1)*gap) : (n * barW + (n-1)*gap);
+      let startX = padL + Math.max(0, (W - totalW) / 2);
+
+      // draw bars
+      items.forEach((it, i) => {
+        const rawPct = (it.value / axisMax) * 100;
+        let pct = Math.max(0, Math.min(100, rawPct));
+
+        // наглядность малых значений
+        if (MAKE_SMALL_VALUES_VISIBLE && it.value > 0) {
+          pct = Math.max(pct, MIN_VISIBLE_PCT);
+        }
+
+        const h = (pct/100) * H;
+
+        const x = startX + i*(barW + gap);
+        const y = padT + (H - h);
+
+        const color = colorForName(it.name);
+
+        // value label
+        ctx.fillStyle = "#000";
+        ctx.font = "700 12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(String(it.value), x + barW/2, Math.max(12, y - 6));
+
+        // if zero -> draw tiny flat line
+        if (it.value <= 0) {
+          ctx.fillStyle = color;
+          ctx.fillRect(x, padT + H - 2, barW, 2);
+        } else {
+          draw3DBar(ctx, x, y, barW, h, color);
+        }
+      });
+    }
+
+    redraw();
+    window.addEventListener("resize", redraw, { passive:true });
   }
 
   function renderSumsTable(pairs) {
@@ -530,15 +509,15 @@
       const engpl = parseCSV(engplText);
       const sums = parseCSV(sumsText);
 
-      renderVerticalChart(chartRU, ru);
-      renderVerticalChart(chartENGPL, engpl, { compact: true });
+      renderCanvasChart(chartRU, ru, { compact:false });
+      renderCanvasChart(chartENGPL, engpl, { compact:true });
       renderSumsTable(sums);
 
       statusEl.textContent = "Обновлено: " + new Date().toLocaleTimeString();
     } catch (e) {
-      chartRU.innerHTML = `<div class="error">${esc(e.message)}</div>`;
-      chartENGPL.innerHTML = `<div class="error">${esc(e.message)}</div>`;
-      sumTableWrap.innerHTML = `<div class="error">${esc(e.message)}</div>`;
+      chartRU.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
+      chartENGPL.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
+      sumTableWrap.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
       statusEl.textContent = "Ошибка";
     }
   }
@@ -548,15 +527,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-

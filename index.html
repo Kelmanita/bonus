@@ -61,15 +61,17 @@
 </div>
 
 <script>
-  const BASE =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9g6_S-GrBLE3-sgiDv_GmTony1aw-RLicAAgBm1uB_TMJJs9Y5djjv8u67Pu82kmKDq4aHlcMzsso";
+  // ✅ Обычный ID таблицы (из /spreadsheets/d/<ID>/edit)
+  const SPREADSHEET_ID = "123_11_j3y3KJhh45yomAOSFp3qP0Un7ePHxjcXQEhfs";
 
   // ✅ gid листа "данные"
   const GID_DANNYE = "1932060383";
 
+  // ✅ Диапазоны
   const RANGE_BIG   = "G2:H28";
   const RANGE_SMALL = "C2:D8";
 
+  // ✅ Частота обновления (мс)
   const REFRESH_MS = 30000;
 
   const statusEl = document.getElementById("status");
@@ -122,17 +124,19 @@
     return Number.isFinite(n) ? n : 0;
   }
 
+  // ✅ Правильная ссылка на CSV конкретного диапазона
   function rangeCsvUrl(gid, range) {
-    return `${BASE}/gviz/tq?tqx=out:csv&gid=${encodeURIComponent(gid)}&range=${encodeURIComponent(range)}`;
+    return `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SPREADSHEET_ID)}/export?format=csv&gid=${encodeURIComponent(gid)}&range=${encodeURIComponent(range)}`;
   }
 
   async function fetchRange(gid, range) {
-    const url = rangeCsvUrl(gid, range) + `&t=${Date.now()}`;
+    const url = rangeCsvUrl(gid, range) + `&t=${Date.now()}`; // анти-кэш
     const resp = await fetch(url, { cache: "no-store" });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const text = await resp.text();
     const rows = parseCSV(text);
 
+    // Данные без заголовков: [name, value]
     const cleaned = rows
       .map(r => (r || []).map(v => (v ?? "").trim()))
       .filter(r => r.length >= 2 && !(r[0] === "" && r[1] === ""));
@@ -149,11 +153,9 @@
     }
 
     let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
-
     if (hideZero) items = items.filter(x => x.value !== 0);
 
     items.sort((a,b) => b.value - a.value);
-
     if (topN) items = items.slice(0, topN);
 
     if (items.length === 0) {
@@ -211,10 +213,10 @@
         fetchRange(GID_DANNYE, RANGE_SMALL),
       ]);
 
-      // Диаграмма 1: топ-20, без нулей
+      // Диаграмма 1: топ-20, без нулей (можно поменять)
       renderBars(chart1El, big, { topN: 20, hideZero: true });
 
-      // Диаграмма 2: показываем всё (и таблицу тоже)
+      // Диаграмма 2: всё + таблица
       renderBars(chart2El, small, { topN: null, hideZero: false });
       renderTable2(small);
 
@@ -224,7 +226,8 @@
       const ss = String(now.getSeconds()).padStart(2,"0");
       setStatus(`Обновлено: ${hh}:${mm}:${ss}`);
     } catch (e) {
-      chart1El.innerHTML = `<div class="error">Ошибка загрузки диаграммы 1: ${escapeHtml(e.message)}<br>Проверь публикацию листа и доступность.</div>`;
+      chart1El.innerHTML = `<div class="error">Ошибка загрузки диаграммы 1: ${escapeHtml(e.message)}<br>
+        Если HTTP 401/403 — значит нет публичного доступа. Если 404 — проверь gid/range.</div>`;
       chart2El.innerHTML = `<div class="error">Ошибка загрузки диаграммы 2: ${escapeHtml(e.message)}</div>`;
       table2El.innerHTML = `<div class="error">Таблица не обновилась из-за ошибки.</div>`;
       setStatus("Ошибка");

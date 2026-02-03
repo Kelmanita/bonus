@@ -88,7 +88,7 @@
     }
 
     .vwrap.compact{
-      grid-template-rows: 22px 1fr 140px;  /* было 90/120 — делаем больше */
+      grid-template-rows: 22px 1fr 170px;  /* было 90/120 — делаем больше */
     }
 
     .cap{
@@ -175,11 +175,12 @@
     }
     
     .xlabels.compact .xlabel{
-      width:48px;               /* должно совпадать с barW в canvas (compact) */
+      width:48px;
       text-align:center;
-      transform: translateX(-2px) rotate(-60deg); /* убираем translateX, он портит центр */
+      transform: translate(-12px, 10px) rotate(-60deg);
       transform-origin: center;
     }
+
 
     /* ========= Таблица сумм ========= */
     #sumTableWrap{
@@ -547,6 +548,7 @@
 </script>
 </body>
 </html>
+
 
 
 

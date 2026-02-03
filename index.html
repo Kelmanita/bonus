@@ -15,21 +15,49 @@
     .row2 { display:grid; grid-template-columns: 1fr 1fr; gap:14px; min-height:0; }
 
     .card { border:1px solid #eee; border-radius:12px; padding:14px; box-sizing:border-box; min-height:0; overflow:hidden; }
-    .card h2 { margin:0 0 10px 0; font-size:18px; }
+    .card h2 { margin:0 0 10px 0; font-size:18px; display:flex; align-items:center; gap:10px; }
+    .pill { font-size:14px; padding:3px 10px; border-radius:999px; border:1px solid #eee; background:#fafafa; }
 
     .chart { height:100%; overflow:auto; display:flex; flex-direction:column; gap:10px; }
 
-    .barrow { display:grid; grid-template-columns: 260px 1fr 90px; gap:12px; align-items:center; font-size:18px; }
+    .barrow { display:grid; grid-template-columns: 280px 1fr 90px; gap:12px; align-items:center; font-size:18px; }
     .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .barwrap { height:18px; background:#f2f2f2; border-radius:999px; overflow:hidden; }
-    .bar { height:100%; width:0%; background:#111; border-radius:999px; transition:width .4s ease; }
+    .bar { height:100%; width:0%; background:#111; border-radius:999px; transition:width .35s ease; }
     .val { text-align:right; font-variant-numeric: tabular-nums; white-space:nowrap; }
 
     .error { color:#b00020; background:#fff5f7; border:1px solid #ffd7dd; border-radius:10px; padding:12px; font-size:16px; line-height:1.35; }
 
+    /* Таблица справа снизу (суммы) — ближе к твоему виду */
+    .sumTable {
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:22px;
+    }
+    .sumTable th, .sumTable td {
+      border:2px solid #222;
+      padding:12px 14px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .sumHead {
+      background:#93c47d; /* светло-зелёный как в твоём примере */
+      color:#000;
+      font-weight:800;
+      text-align:center;
+      font-size:26px;
+      letter-spacing:.2px;
+    }
+    .sumLabel { font-weight:800; text-align:center; }
+    .sumVal { text-align:right; font-variant-numeric: tabular-nums; }
+
     @media (max-width: 900px) {
       .barrow { grid-template-columns: 1fr 1fr 70px; }
       .row2 { grid-template-columns: 1fr; }
+      .sumTable { font-size:18px; }
+      .sumHead { font-size:22px; }
     }
   </style>
 </head>
@@ -42,42 +70,43 @@
 
   <div class="grid">
     <div class="card">
-      <h2>Диаграмма 1 (данные!G2:H28)</h2>
-      <div class="chart" id="chart1"></div>
+      <h2>RU <span class="pill">данные!G2:H28</span></h2>
+      <div class="chart" id="chartRU"></div>
     </div>
 
     <div class="row2">
       <div class="card">
-        <h2>Диаграмма 2 (данные!C2:D8)</h2>
-        <div class="chart" id="chart2"></div>
+        <h2>ENG / PL <span class="pill">данные!C2:D8</span></h2>
+        <div class="chart" id="chartENGPL"></div>
       </div>
 
       <div class="card">
-        <h2>Таблица (по диаграмме 2)</h2>
-        <div id="table2" style="height:100%; overflow:auto;"></div>
+        <h2>Team ratings <span class="pill">данные!P18:Q21</span></h2>
+        <div id="sumTableWrap" style="height:100%; overflow:auto;"></div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  // ✅ Обычный ID таблицы (из /spreadsheets/d/<ID>/edit)
+  // ✅ ID таблицы
   const SPREADSHEET_ID = "123_11_j3y3KJhh45yomAOSFp3qP0Un7ePHxjcXQEhfs";
 
   // ✅ gid листа "данные"
   const GID_DANNYE = "1932060383";
 
-  // ✅ Диапазоны
-  const RANGE_BIG   = "G2:H28";
-  const RANGE_SMALL = "C2:D8";
+  // Диапазоны
+  const RANGE_RU      = "G2:H28";
+  const RANGE_ENGPL   = "C2:D8";
+  const RANGE_SUMS    = "P18:Q21";
 
-  // ✅ Частота обновления (мс)
+  // Обновление
   const REFRESH_MS = 30000;
 
   const statusEl = document.getElementById("status");
-  const chart1El = document.getElementById("chart1");
-  const chart2El = document.getElementById("chart2");
-  const table2El = document.getElementById("table2");
+  const chartRU = document.getElementById("chartRU");
+  const chartENGPL = document.getElementById("chartENGPL");
+  const sumTableWrap = document.getElementById("sumTableWrap");
 
   function setStatus(t){ statusEl.textContent = t; }
 
@@ -124,28 +153,44 @@
     return Number.isFinite(n) ? n : 0;
   }
 
-  // ✅ Правильная ссылка на CSV конкретного диапазона
+  // ✅ export CSV по диапазону
   function rangeCsvUrl(gid, range) {
     return `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SPREADSHEET_ID)}/export?format=csv&gid=${encodeURIComponent(gid)}&range=${encodeURIComponent(range)}`;
   }
 
   async function fetchRange(gid, range) {
-    const url = rangeCsvUrl(gid, range) + `&t=${Date.now()}`; // анти-кэш
+    const url = rangeCsvUrl(gid, range) + `&t=${Date.now()}`;
     const resp = await fetch(url, { cache: "no-store" });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const text = await resp.text();
     const rows = parseCSV(text);
 
-    // Данные без заголовков: [name, value]
-    const cleaned = rows
+    return rows
       .map(r => (r || []).map(v => (v ?? "").trim()))
       .filter(r => r.length >= 2 && !(r[0] === "" && r[1] === ""));
+  }
 
-    return cleaned;
+  // 🎨 Стабильный цвет по имени (каждый агент свой цвет)
+  function hashString(s) {
+    s = String(s ?? "");
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  // Возвращаем HSL — браузеру легко, цвета разные и приятные
+  function colorForName(name) {
+    const h = hashString(name) % 360;            // оттенок
+    const sat = 70;                              // насыщенность
+    const light = 45;                            // яркость
+    return `hsl(${h} ${sat}% ${light}%)`;
   }
 
   function renderBars(el, pairs, opts = {}) {
-    const { topN = null, hideZero = false } = opts;
+    const { topN = null, sortDesc = true } = opts;
 
     if (!pairs || pairs.length === 0) {
       el.innerHTML = `<div class="error">Нет данных для диаграммы.</div>`;
@@ -153,72 +198,75 @@
     }
 
     let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
-    if (hideZero) items = items.filter(x => x.value !== 0);
 
-    items.sort((a,b) => b.value - a.value);
+    // нули НЕ скрываем (как ты просила)
+    if (sortDesc) items.sort((a,b) => b.value - a.value);
     if (topN) items = items.slice(0, topN);
-
-    if (items.length === 0) {
-      el.innerHTML = `<div class="error">Все значения 0 — нечего рисовать.</div>`;
-      return;
-    }
 
     const maxVal = Math.max(1, ...items.map(x => x.value));
 
     el.innerHTML = items.map(it => {
       const pct = Math.max(0, Math.min(100, (it.value / maxVal) * 100));
+      const col = colorForName(it.name);
       return `
         <div class="barrow">
           <div class="name">${escapeHtml(it.name)}</div>
-          <div class="barwrap"><div class="bar" style="width:${pct}%;"></div></div>
+          <div class="barwrap"><div class="bar" style="width:${pct}%; background:${col};"></div></div>
           <div class="val">${escapeHtml(it.value)}</div>
         </div>
       `;
     }).join("");
   }
 
-  function renderTable2(pairs) {
+  function renderSumsTable(pairs) {
+    // pairs: [ [label, value], ... ] из P18:Q21
     if (!pairs || pairs.length === 0) {
-      table2El.innerHTML = `<div class="error">Нет данных для таблицы.</div>`;
+      sumTableWrap.innerHTML = `<div class="error">Нет данных для таблицы сумм.</div>`;
       return;
     }
 
-    const items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }))
-                       .sort((a,b) => b.value - a.value);
+    // Рендер “как у тебя”: заголовок зелёный, жирные подписи
+    let html = `
+      <table class="sumTable">
+        <thead>
+          <tr><th class="sumHead" colspan="2">Team ratings 📊</th></tr>
+        </thead>
+        <tbody>
+    `;
 
-    let html = `<table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:18px;">
-      <thead>
+    for (const r of pairs) {
+      const label = r[0] ?? "";
+      const value = toNumber(r[1]);
+      html += `
         <tr>
-          <th style="border:1px solid #eee; padding:10px 12px; background:#f7f7f7; text-align:left;">Team</th>
-          <th style="border:1px solid #eee; padding:10px 12px; background:#f7f7f7; text-align:right;">Rating</th>
+          <td class="sumLabel">${escapeHtml(label)}</td>
+          <td class="sumVal">${escapeHtml(value)}</td>
         </tr>
-      </thead><tbody>`;
-
-    for (const it of items) {
-      html += `<tr>
-        <td style="border:1px solid #eee; padding:10px 12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(it.name)}</td>
-        <td style="border:1px solid #eee; padding:10px 12px; text-align:right; font-variant-numeric:tabular-nums;">${escapeHtml(it.value)}</td>
-      </tr>`;
+      `;
     }
+
     html += `</tbody></table>`;
-    table2El.innerHTML = html;
+    sumTableWrap.innerHTML = html;
   }
 
   async function loadAll() {
     try {
       setStatus("Обновление…");
 
-      const [big, small] = await Promise.all([
-        fetchRange(GID_DANNYE, RANGE_BIG),
-        fetchRange(GID_DANNYE, RANGE_SMALL),
+      const [ru, engpl, sums] = await Promise.all([
+        fetchRange(GID_DANNYE, RANGE_RU),
+        fetchRange(GID_DANNYE, RANGE_ENGPL),
+        fetchRange(GID_DANNYE, RANGE_SUMS),
       ]);
 
-      // Диаграмма 1: топ-20, без нулей (можно поменять)
-      renderBars(chart1El, big, { topN: 20, hideZero: true });
+      // RU — как на картинке: показываем всех, включая нули
+      renderBars(chartRU, ru, { topN: null, sortDesc: true });
 
-      // Диаграмма 2: всё + таблица
-      renderBars(chart2El, small, { topN: null, hideZero: false });
-      renderTable2(small);
+      // ENG/PL — тоже со всеми значениями (в т.ч. нули)
+      renderBars(chartENGPL, engpl, { topN: null, sortDesc: true });
+
+      // Таблица сумм
+      renderSumsTable(sums);
 
       const now = new Date();
       const hh = String(now.getHours()).padStart(2,"0");
@@ -226,10 +274,9 @@
       const ss = String(now.getSeconds()).padStart(2,"0");
       setStatus(`Обновлено: ${hh}:${mm}:${ss}`);
     } catch (e) {
-      chart1El.innerHTML = `<div class="error">Ошибка загрузки диаграммы 1: ${escapeHtml(e.message)}<br>
-        Если HTTP 401/403 — значит нет публичного доступа. Если 404 — проверь gid/range.</div>`;
-      chart2El.innerHTML = `<div class="error">Ошибка загрузки диаграммы 2: ${escapeHtml(e.message)}</div>`;
-      table2El.innerHTML = `<div class="error">Таблица не обновилась из-за ошибки.</div>`;
+      chartRU.innerHTML = `<div class="error">Ошибка RU: ${escapeHtml(e.message)}</div>`;
+      chartENGPL.innerHTML = `<div class="error">Ошибка ENG/PL: ${escapeHtml(e.message)}</div>`;
+      sumTableWrap.innerHTML = `<div class="error">Ошибка таблицы сумм: ${escapeHtml(e.message)}</div>`;
       setStatus("Ошибка");
     }
   }

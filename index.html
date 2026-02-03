@@ -37,10 +37,21 @@
 
     .row2{
       display:grid;
-      grid-template-columns: 1.35fr 0.65fr;
-      gap:14px;
+    
+      /* 3 колонки:
+         1) диаграмма ENG/PL (в 2 раза уже)
+         2) пустой промежуток
+         3) таблица (как была) */
+      grid-template-columns: 0.7fr 1fr 0.65fr;
+    
+      gap:0;          /* gap убираем, промежуток делаем отдельной колонкой */
       min-height:0;
     }
+
+    .row2 > .card:last-child{
+      grid-column: 3;
+    }
+
 
     .card{
       border:1px solid #eee;
@@ -527,3 +538,4 @@
 </script>
 </body>
 </html>
+

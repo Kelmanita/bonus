@@ -34,14 +34,15 @@
       box-sizing:border-box;
       min-height:0;
     }
+
+    /* ↓ ВАЖНО: делаем таблицу уже, диаграмму шире (чтобы имена влезали) */
     .row2{
       display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.35fr 0.65fr; /* было 1fr 1fr */
       gap:14px;
       min-height:0;
     }
 
-    /* card как flex-колонка, чтобы график занимал остаток */
     .card{
       border:1px solid #eee;
       border-radius:14px;
@@ -49,7 +50,6 @@
       box-sizing:border-box;
       min-height:0;
       overflow:hidden;
-
       display:flex;
       flex-direction:column;
     }
@@ -86,7 +86,9 @@
     .vchart{
       height:100%;
       display:grid;
-      grid-template-rows: 22px 1fr 92px; /* ↑ больше места под имена */
+
+      /* ↓ ДАЛИ БОЛЬШЕ МЕСТА ПОД ИМЕНА */
+      grid-template-rows: 22px 1fr 130px;  /* было ~90px */
       gap:8px;
       min-height:0;
     }
@@ -108,7 +110,6 @@
       border-radius:12px;
       overflow:hidden;
       min-height:0;
-
       background: linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
       background-size:100% 20%;
     }
@@ -147,26 +148,27 @@
       min-height:2px;
     }
 
-    /* ====== Имена: НЕ обрезаем, даем больше места и делаем аккуратный наклон ====== */
+    /* ====== Имена: 1 строка, без сокращений. Делаем наклон сильнее и больше высоты ====== */
     .xlabels{
       display:grid;
       gap:6px;
-      padding:0 10px 0 10px;
-      overflow:visible;    /* важно: не скрываем подписи */
+      padding:0 10px;
+      overflow:visible;
       min-height:0;
     }
 
     .xlabel{
       white-space:nowrap;
-      overflow:visible;    /* важно: без ... */
-      text-overflow:clip;  /* важно: без ... */
+      overflow:visible;
+      text-overflow:clip;
 
-      font-weight:700;
-      font-size: clamp(10px, 0.85vw, 13px); /* чуть меньше */
+      font-weight:800;
+      font-size: clamp(11px, 0.95vw, 14px);
       line-height:1.05;
       text-align:center;
 
-      transform: rotate(-15deg); /* меньше наклон — лучше читается */
+      /* ↓ Сильнее наклон — влезают длинные фамилии */
+      transform: rotate(-55deg);
       transform-origin: top center;
       user-select:none;
     }
@@ -194,7 +196,7 @@
       transform: translateY(50%);
     }
 
-    /* ========= Таблица сумм: без скролла, 4 строки всегда видны ========= */
+    /* ========= Таблица сумм: без скролла ========= */
     #sumTableWrap{
       flex:1 1 auto;
       min-height:0;
@@ -206,16 +208,14 @@
       height:100%;
       border-collapse:collapse;
       table-layout:fixed;
-      font-size:22px;
-    }
 
-    /* фиксируем высоты строк, чтобы 4 строки точно влезли */
-    .sumTable tr { height: 19%; }              /* 1 заголовок + 4 строки */
-    .sumTable thead tr { height: 24%; }
+      /* чуть меньше, чтобы точно влезли 4 строки */
+      font-size:18px;
+    }
 
     .sumTable th, .sumTable td{
       border:2px solid #222;
-      padding:6px 10px;   /* ↓ меньше padding */
+      padding:6px 8px;
       line-height:1.0;
       white-space:nowrap;
       overflow:hidden;
@@ -225,7 +225,7 @@
 
     .sumHead{
       background:#93c47d;
-      font-size:24px;
+      font-size:20px;
       font-weight:900;
       text-align:center;
     }
@@ -235,8 +235,8 @@
 
     @media (max-width: 900px){
       .row2{ grid-template-columns:1fr; }
-      .xlabel{ transform: rotate(-20deg); }
-      .sumTable{ font-size:20px; }
+      .vchart{ grid-template-rows: 22px 1fr 140px; }
+      .xlabel{ transform: rotate(-60deg); }
     }
   </style>
 </head>
@@ -351,7 +351,7 @@
     return `hsl(${h} 70% 45%)`;
   }
 
-  // ✅ Оставляем “как было красиво”: ось по данным (столбики наглядные)
+  // Ось по данным (как тебе нравится — столбики наглядные)
   function niceMax(v) {
     if (v <= 0) return 1;
     const exp = Math.pow(10, Math.floor(Math.log10(v)));

@@ -93,19 +93,19 @@
 
     /* ENG/PL: узкие столбики по ширине */
     .vchart.compact .columns{
-      display:flex !important;     /* вместо grid */
-      gap:18px;                    /* расстояние между столбиками */
-      justify-content:center;      /* центрируем */
-      align-items:flex-end;        /* снизу */
-      padding: 0 40px;             /* чтобы не прилипали к краям */
+      display:flex !important;
+      justify-content:center;
+      align-items:flex-end;
+      gap:22px;
+      padding: 0 40px;
     }
     
     .vchart.compact .col{
-      width: 90px;                 /* ширина “колонки” */
+      width: 100px;                 /* ширина “колонки” */
     }
     
     .vchart.compact .bar{
-      width: 70px;                 /* ширина самого столбика */
+      width: 65px;                 /* ширина самого столбика */
     }
 
     .cap{
@@ -157,21 +157,24 @@
 
     /* === 3D олдскул-столбики === */
     /* ===== 3D Oldschool bar (Excel-like) ===== */
+    /* ===== 3D Oldschool bar (цвет сохраняется!) ===== */
     .bar{
       position: relative;
       height: 0%;
       min-height: 2px;
     
-      border-radius: 4px;
-      box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+      /* ВАЖНО: цвет берётся из inline background (hsl) */
+      border-radius: 6px 6px 2px 2px;
     
-      /* цвет приходит inline через background: hsl(...) */
-      /* делаем “объём” */
-      filter: saturate(1.05);
-      transform: perspective(800px) rotateX(12deg);
-      transform-origin: bottom;
+      /* лёгкая тень как у Excel */
+      box-shadow: 0 8px 0 rgba(0,0,0,0.14);
+    
+      /* делаем “объём”, но не убиваем цвет */
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,0.28), rgba(0,0,0,0.18));
+      background-blend-mode: overlay;
     }
-
+    
     /* Верхняя грань */
     .bar::before{
       content:"";
@@ -181,11 +184,14 @@
       top: -10px;
       height: 10px;
     
-      /* подсветка сверху */
-      background: rgba(255,255,255,0.35);
-      clip-path: polygon(0 100%, 10px 0, 100% 0, calc(100% - 10px) 100%);
+      /* подсветка сверху (НЕ перекрывает цвет полностью) */
+      background: rgba(255,255,255,0.28);
     
-      border-radius: 4px 4px 0 0;
+      /* форма “крышки” */
+      clip-path: polygon(0 100%, 10px 0, 100% 0, calc(100% - 10px) 100%);
+      border-radius: 6px 6px 0 0;
+    
+      pointer-events:none;
     }
     
     /* Правая боковая грань */
@@ -197,13 +203,15 @@
       width: 10px;
       height: calc(100% + 10px);
     
+      /* затемнение боковой грани */
       background: rgba(0,0,0,0.22);
-      clip-path: polygon(0 0, 100% 100%, 100% 100%, 0 100%);
     
-      border-radius: 0 4px 4px 0;
+      clip-path: polygon(0 0, 100% 10px, 100% 100%, 0 calc(100% - 10px));
+      border-radius: 0 6px 2px 0;
+    
+      pointer-events:none;
     }
 
-    
     /* нижняя “платформа” как в старых диаграммах */
     .plot::after{
       content:"";
@@ -211,13 +219,11 @@
       left: 10px;
       right: 10px;
       bottom: 10px;
-      height: 14px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.03));
-      border-radius: 12px;
+      height: 12px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.02));
+      border-radius: 999px;
       pointer-events:none;
     }
-
-
 
     /* ====== Имена: 1 строка, без сокращений. Делаем наклон сильнее и больше высоты ====== */
     .xlabels{
@@ -543,6 +549,7 @@
 </script>
 </body>
 </html>
+
 
 
 

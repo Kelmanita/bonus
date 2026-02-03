@@ -20,20 +20,20 @@
 
     .error { color:#b00020; background:#fff5f7; border:1px solid #ffd7dd; border-radius:10px; padding:12px; font-size:16px; line-height:1.35; }
 
-    /* ===== Вертикальная диаграмма (без скролла) ===== */
+    /* ===== Вертикальная диаграмма без скролла ===== */
     .vchart {
       height: 100%;
       display: grid;
-      grid-template-rows: 22px 1fr 54px; /* подпись max, поле, подписи снизу */
+      grid-template-rows: 24px 1fr 64px;
       gap: 8px;
       overflow: hidden;
     }
 
-    .ycap {
+    .cap {
       display:flex;
       justify-content:space-between;
       font-size:14px;
-      opacity:.75;
+      opacity:.78;
       padding: 0 6px;
       user-select:none;
       white-space:nowrap;
@@ -46,7 +46,29 @@
       overflow: hidden;
       background:
         linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
-      background-size: 100% 20%; /* 5 горизонтальных линий */
+      background-size: 100% 20%;
+    }
+
+    /* линия цели */
+    .targetLine {
+      position:absolute;
+      left:0; right:0;
+      height:2px;
+      background:#e11d48;
+      opacity:0.85;
+      pointer-events:none;
+    }
+    .targetLabel {
+      position:absolute;
+      right:10px;
+      transform: translateY(-50%);
+      font-size:12px;
+      font-weight:700;
+      color:#e11d48;
+      background: rgba(255,255,255,0.9);
+      padding:2px 6px;
+      border-radius:999px;
+      pointer-events:none;
     }
 
     .columns {
@@ -65,20 +87,21 @@
       min-width:0;
     }
 
+    .val {
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 4px;
+      opacity: .9;
+      user-select:none;
+      white-space:nowrap;
+    }
+
     .bar {
       width: 100%;
       height: 0%;
       border-radius: 6px 6px 0 0;
       transition: height .35s ease;
-    }
-
-    .val {
-      font-size: 12px;
-      font-variant-numeric: tabular-nums;
-      margin-bottom: 4px;
-      opacity: .85;
-      user-select:none;
-      white-space:nowrap;
+      min-height: 2px; /* нули будет видно тонкой линией */
     }
 
     .xlabels {
@@ -100,7 +123,7 @@
       line-height: 1.1;
     }
 
-    /* ===== Таблица сумм (как у тебя) ===== */
+    /* ===== Таблица сумм ===== */
     .sumTable {
       width:100%;
       border-collapse:collapse;
@@ -161,20 +184,14 @@
 </div>
 
 <script>
-  // ✅ ID таблицы
   const SPREADSHEET_ID = "123_11_j3y3KJhh45yomAOSFp3qP0Un7ePHxjcXQEhfs";
-  // ✅ gid листа "данные"
   const GID_DANNYE = "1932060383";
 
-  // Диапазоны
   const RANGE_RU    = "G2:H28";
   const RANGE_ENGPL = "C2:D8";
   const RANGE_SUMS  = "P18:Q21";
 
-  // Максимум шкалы (как ты просила)
-  const MAX_TARGET = 150000;
-
-  // Обновление
+  const TARGET = 150000;        // цель (линия)
   const REFRESH_MS = 30000;
 
   const statusEl = document.getElementById("status");
@@ -243,7 +260,7 @@
       .filter(r => r.length >= 2 && !(r[0] === "" && r[1] === ""));
   }
 
-  // 🎨 Стабильный цвет по имени
+  // Цвет по имени (стабильно)
   function hashString(s) {
     s = String(s ?? "");
     let h = 2166136261;
@@ -258,39 +275,50 @@
     return `hsl(${h} 70% 45%)`;
   }
 
-  // Формат числа (можешь убрать, если не надо разделителей)
-  function formatNum(n) {
-    // Samsung браузер не всегда любит Intl, поэтому простой вариант:
-    return String(n);
+  // "красивый" максимум оси Y как в графиках: округлить вверх до шага
+  function niceMax(v) {
+    if (v <= 0) return 1;
+    const exp = Math.pow(10, Math.floor(Math.log10(v)));
+    const frac = v / exp;
+    let niceFrac;
+    if (frac <= 1) niceFrac = 1;
+    else if (frac <= 2) niceFrac = 2;
+    else if (frac <= 5) niceFrac = 5;
+    else niceFrac = 10;
+    return niceFrac * exp;
   }
 
-  // ✅ Вертикальная диаграмма
-  function renderVerticalChart(container, pairs, titleMax) {
+  function renderVerticalChart(container, pairs, target) {
     if (!pairs || pairs.length === 0) {
       container.innerHTML = `<div class="error">Нет данных для диаграммы.</div>`;
       return;
     }
 
-    // items: все значения, включая нули
     let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
-    // сортируем как на старых графиках — по убыванию
     items.sort((a,b) => b.value - a.value);
 
-    // сетка: 0, 25%, 50%, 75%, 100%
-    const max = titleMax;
-    const ticks = [max, Math.round(max*0.75), Math.round(max*0.5), Math.round(max*0.25), 0];
+    const maxData = Math.max(0, ...items.map(x => x.value));
+    const axisMax = niceMax(maxData);            // как “в старом” — по данным
+    const targetPct = (target / axisMax) * 100;  // линия цели относительно оси
 
-    // grid columns count = items.length
+    // если цель слишком высоко (выше axisMax) — покажем её как "выше графика"
+    const showTargetInside = target <= axisMax;
+
     const cols = items.length;
 
-    // Собираем HTML каркас
     container.innerHTML = `
       <div class="vchart">
-        <div class="ycap">
+        <div class="cap">
           <div>0</div>
-          <div>MAX: ${escapeHtml(String(max))}</div>
+          <div>MAX (ось): ${escapeHtml(String(axisMax))}${showTargetInside ? "" : ` • ЦЕЛЬ: ${escapeHtml(String(target))}`}</div>
         </div>
-        <div class="plot" aria-label="chart">
+        <div class="plot">
+          ${showTargetInside ? `
+            <div class="targetLine" style="bottom:${targetPct}%;"></div>
+            <div class="targetLabel" style="bottom:${targetPct}%; transform: translateY(50%);">ЦЕЛЬ ${escapeHtml(String(target))}</div>
+          ` : `
+            <div class="targetLabel" style="top:10px;">ЦЕЛЬ ${escapeHtml(String(target))} (выше)</div>
+          `}
           <div class="columns" id="cols"></div>
         </div>
         <div class="xlabels" id="xlabels"></div>
@@ -299,28 +327,21 @@
 
     const colsEl = container.querySelector("#cols");
     const xlabelsEl = container.querySelector("#xlabels");
-
-    // задаём количество колонок в grid
     colsEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     xlabelsEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
-    // рисуем столбики
     colsEl.innerHTML = items.map(it => {
-      const pct = Math.max(0, Math.min(100, (it.value / max) * 100));
+      const pct = Math.max(0, Math.min(100, (it.value / axisMax) * 100));
       const col = colorForName(it.name);
-      const valText = formatNum(it.value);
-      // нули тоже показываем — для нуля сделаем 2% чтобы было видно
       const heightPct = (it.value === 0) ? 2 : pct;
-
       return `
         <div class="col">
-          <div class="val">${escapeHtml(valText)}</div>
+          <div class="val">${escapeHtml(String(it.value))}</div>
           <div class="bar" style="height:${heightPct}%; background:${col};"></div>
         </div>
       `;
     }).join("");
 
-    // подписи снизу
     xlabelsEl.innerHTML = items.map(it => {
       return `<div class="xlabel" title="${escapeHtml(it.name)}">${escapeHtml(it.name)}</div>`;
     }).join("");
@@ -365,9 +386,9 @@
         fetchRange(GID_DANNYE, RANGE_SUMS),
       ]);
 
-      // Максимум фиксированный 150 000 (как ты просила)
-      renderVerticalChart(chartRU, ru, MAX_TARGET);
-      renderVerticalChart(chartENGPL, engpl, MAX_TARGET);
+      // ✅ “как у тебя было”: ось по данным + линия цели 150k
+      renderVerticalChart(chartRU, ru, TARGET);
+      renderVerticalChart(chartENGPL, engpl, TARGET);
 
       renderSumsTable(sums);
 

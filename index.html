@@ -3,165 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Team ratings</title>
+  <title>Bonus Dashboard</title>
   <style>
-    html, body {
-      margin: 0; padding: 0;
-      width: 100vw; height: 100vh;
-      overflow: hidden;
-      background: #ffffff;
-      font-family: Arial, sans-serif;
-    }
+    html, body { margin:0; padding:0; width:100vw; height:100vh; overflow:hidden; background:#fff; font-family: Arial, sans-serif; }
+    .wrap { height:100vh; display:flex; flex-direction:column; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #eee; }
+    .title { font-weight:700; font-size:18px; }
+    .status { opacity:.75; font-size:14px; white-space:nowrap; }
 
-    .wrap {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    .grid { flex:1; display:grid; grid-template-rows: 2fr 1fr; gap:14px; padding:14px 16px; box-sizing:border-box; min-height:0; }
+    .row2 { display:grid; grid-template-columns: 1fr 1fr; gap:14px; min-height:0; }
 
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 16px;
-      border-bottom: 1px solid #eee;
-      font-size: 18px;
-    }
-    .title { font-weight: 700; }
-    .status { opacity: 0.75; font-size: 16px; white-space: nowrap; }
+    .card { border:1px solid #eee; border-radius:12px; padding:14px; box-sizing:border-box; min-height:0; overflow:hidden; }
+    .card h2 { margin:0 0 10px 0; font-size:18px; }
 
-    .grid {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1.2fr 1fr; /* слева диаграмма, справа таблица */
-      gap: 14px;
-      padding: 14px 16px;
-      box-sizing: border-box;
-      min-height: 0;
-    }
+    .chart { height:100%; overflow:auto; display:flex; flex-direction:column; gap:10px; }
 
-    .card {
-      border: 1px solid #eee;
-      border-radius: 12px;
-      padding: 14px;
-      box-sizing: border-box;
-      min-height: 0;
-      overflow: hidden;
-    }
+    .barrow { display:grid; grid-template-columns: 260px 1fr 90px; gap:12px; align-items:center; font-size:18px; }
+    .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .barwrap { height:18px; background:#f2f2f2; border-radius:999px; overflow:hidden; }
+    .bar { height:100%; width:0%; background:#111; border-radius:999px; transition:width .4s ease; }
+    .val { text-align:right; font-variant-numeric: tabular-nums; white-space:nowrap; }
 
-    /* Диаграмма */
-    .chart {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      height: 100%;
-      overflow: auto;
-    }
+    .error { color:#b00020; background:#fff5f7; border:1px solid #ffd7dd; border-radius:10px; padding:12px; font-size:16px; line-height:1.35; }
 
-    .row {
-      display: grid;
-      grid-template-columns: 220px 1fr 90px;
-      gap: 12px;
-      align-items: center;
-      font-size: 18px;
-    }
-
-    .name {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .barwrap {
-      height: 18px;
-      background: #f2f2f2;
-      border-radius: 999px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .bar {
-      height: 100%;
-      width: 0%;
-      background: #111; /* не задаю цветом стиль, но чёрный стабильнее */
-      border-radius: 999px;
-      transition: width 0.4s ease;
-    }
-
-    .val {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }
-
-    /* Таблица */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-      font-size: 18px;
-    }
-    th, td {
-      border: 1px solid #eee;
-      padding: 10px 12px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    th {
-      background: #f7f7f7;
-      font-weight: 700;
-    }
-
-    .error {
-      color: #b00020;
-      background: #fff5f7;
-      border: 1px solid #ffd7dd;
-      border-radius: 10px;
-      padding: 12px;
-      line-height: 1.35;
-      font-size: 16px;
-    }
-
-    /* На очень узких экранах можно сделать столбиком */
     @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; }
-      .row { grid-template-columns: 1fr 1fr 80px; }
+      .barrow { grid-template-columns: 1fr 1fr 70px; }
+      .row2 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 <div class="wrap">
   <div class="topbar">
-    <div class="title">Team ratings</div>
+    <div class="title">Bonus dashboard</div>
     <div class="status" id="status">Загрузка…</div>
   </div>
 
   <div class="grid">
     <div class="card">
-      <div style="font-weight:700; font-size:18px; margin-bottom:10px;">Диаграмма</div>
-      <div class="chart" id="chart"></div>
+      <h2>Диаграмма 1 (данные!G2:H28)</h2>
+      <div class="chart" id="chart1"></div>
     </div>
 
-    <div class="card">
-      <div style="font-weight:700; font-size:18px; margin-bottom:10px;">Таблица</div>
-      <div id="tableWrap" style="height:100%; overflow:auto;"></div>
+    <div class="row2">
+      <div class="card">
+        <h2>Диаграмма 2 (данные!C2:D8)</h2>
+        <div class="chart" id="chart2"></div>
+      </div>
+
+      <div class="card">
+        <h2>Таблица (по диаграмме 2)</h2>
+        <div id="table2" style="height:100%; overflow:auto;"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-  // ✅ ТВОЯ CSV-ссылка
-  const CSV_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9g6_S-GrBLE3-sgiDv_GmTony1aw-RLicAAgBm1uB_TMJJs9Y5djjv8u67Pu82kmKDq4aHlcMzsso/pub?gid=1345331115&single=true&output=csv";
+  const BASE =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9g6_S-GrBLE3-sgiDv_GmTony1aw-RLicAAgBm1uB_TMJJs9Y5djjv8u67Pu82kmKDq4aHlcMzsso";
 
-  // ✅ Как часто обновлять (мс)
-  const REFRESH_MS = 30000; // 30 секунд
+  // ✅ gid листа "данные"
+  const GID_DANNYE = "1932060383";
+
+  const RANGE_BIG   = "G2:H28";
+  const RANGE_SMALL = "C2:D8";
+
+  const REFRESH_MS = 30000;
 
   const statusEl = document.getElementById("status");
-  const chartEl  = document.getElementById("chart");
-  const tableWrap = document.getElementById("tableWrap");
+  const chart1El = document.getElementById("chart1");
+  const chart2El = document.getElementById("chart2");
+  const table2El = document.getElementById("table2");
 
   function setStatus(t){ statusEl.textContent = t; }
 
@@ -174,11 +88,8 @@
       .replaceAll("'", "&#039;");
   }
 
-  // CSV парсер (под Google Sheets)
   function parseCSV(text) {
-    // убираем BOM, если есть
-    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-
+    if (text && text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
     const rows = [];
     let row = [];
     let cell = "";
@@ -191,121 +102,121 @@
       if (ch === '"' && inQuotes && next === '"') { cell += '"'; i++; continue; }
       if (ch === '"') { inQuotes = !inQuotes; continue; }
 
-      if (ch === "\n" && !inQuotes) {
-        row.push(cell); rows.push(row);
-        row = []; cell = "";
-        continue;
-      }
+      if (ch === "\n" && !inQuotes) { row.push(cell); rows.push(row); row=[]; cell=""; continue; }
       if (ch === "\r") continue;
 
-      if (ch === "," && !inQuotes) { row.push(cell); cell = ""; continue; }
+      if (ch === "," && !inQuotes) { row.push(cell); cell=""; continue; }
 
       cell += ch;
     }
     row.push(cell);
     rows.push(row);
 
-    // убрать пустые хвосты
     while (rows.length && rows[rows.length-1].every(v => (v ?? "").trim() === "")) rows.pop();
-
     return rows;
   }
 
-  function normalizeRows(rows) {
-    if (!rows || rows.length < 2) return { header: [], data: [] };
-
-    const header = rows[0].map(h => (h ?? "").trim());
-    const data = [];
-
-    for (let i = 1; i < rows.length; i++) {
-      const r = rows[i];
-      // пропускаем пустые строки
-      if (!r || r.every(v => (v ?? "").trim() === "")) continue;
-
-      // добиваем до длины заголовка
-      const rr = [];
-      for (let c = 0; c < header.length; c++) rr.push((r[c] ?? "").trim());
-      data.push(rr);
-    }
-    return { header, data };
-  }
-
   function toNumber(x) {
-    // на случай "11 928" или "11,928"
     const s = String(x ?? "").replace(/\s/g, "").replace(",", ".");
     const n = Number(s);
     return Number.isFinite(n) ? n : 0;
   }
 
-  function renderTable(header, data) {
-    if (!header.length) {
-      tableWrap.innerHTML = `<div class="error">Нет данных для таблицы (CSV пустой или нет заголовков).</div>`;
-      return;
-    }
-
-    let html = "<table><thead><tr>";
-    for (const h of header) html += `<th>${escapeHtml(h)}</th>`;
-    html += "</tr></thead><tbody>";
-
-    for (const r of data) {
-      html += "<tr>";
-      for (let i = 0; i < header.length; i++) html += `<td>${escapeHtml(r[i] ?? "")}</td>`;
-      html += "</tr>";
-    }
-
-    html += "</tbody></table>";
-    tableWrap.innerHTML = html;
+  function rangeCsvUrl(gid, range) {
+    return `${BASE}/gviz/tq?tqx=out:csv&gid=${encodeURIComponent(gid)}&range=${encodeURIComponent(range)}`;
   }
 
-  function renderBars(header, data) {
-    // ожидаем, что первая колонка — название, вторая — число (как у тебя)
-    if (header.length < 2) {
-      chartEl.innerHTML = `<div class="error">Для диаграммы нужно минимум 2 колонки: название и значение.</div>`;
+  async function fetchRange(gid, range) {
+    const url = rangeCsvUrl(gid, range) + `&t=${Date.now()}`;
+    const resp = await fetch(url, { cache: "no-store" });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const text = await resp.text();
+    const rows = parseCSV(text);
+
+    const cleaned = rows
+      .map(r => (r || []).map(v => (v ?? "").trim()))
+      .filter(r => r.length >= 2 && !(r[0] === "" && r[1] === ""));
+
+    return cleaned;
+  }
+
+  function renderBars(el, pairs, opts = {}) {
+    const { topN = null, hideZero = false } = opts;
+
+    if (!pairs || pairs.length === 0) {
+      el.innerHTML = `<div class="error">Нет данных для диаграммы.</div>`;
       return;
     }
 
-    // соберём пары name/value
-    const items = data.map(r => ({
-      name: r[0] ?? "",
-      value: toNumber(r[1])
-    }));
+    let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
 
-    // сортировка по убыванию значения
-    items.sort((a, b) => b.value - a.value);
+    if (hideZero) items = items.filter(x => x.value !== 0);
+
+    items.sort((a,b) => b.value - a.value);
+
+    if (topN) items = items.slice(0, topN);
+
+    if (items.length === 0) {
+      el.innerHTML = `<div class="error">Все значения 0 — нечего рисовать.</div>`;
+      return;
+    }
 
     const maxVal = Math.max(1, ...items.map(x => x.value));
 
-    // рисуем
-    let html = "";
-    for (const it of items) {
+    el.innerHTML = items.map(it => {
       const pct = Math.max(0, Math.min(100, (it.value / maxVal) * 100));
-      html += `
-        <div class="row">
+      return `
+        <div class="barrow">
           <div class="name">${escapeHtml(it.name)}</div>
           <div class="barwrap"><div class="bar" style="width:${pct}%;"></div></div>
           <div class="val">${escapeHtml(it.value)}</div>
         </div>
       `;
-    }
-    chartEl.innerHTML = html;
+    }).join("");
   }
 
-  async function loadAndRender() {
+  function renderTable2(pairs) {
+    if (!pairs || pairs.length === 0) {
+      table2El.innerHTML = `<div class="error">Нет данных для таблицы.</div>`;
+      return;
+    }
+
+    const items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }))
+                       .sort((a,b) => b.value - a.value);
+
+    let html = `<table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:18px;">
+      <thead>
+        <tr>
+          <th style="border:1px solid #eee; padding:10px 12px; background:#f7f7f7; text-align:left;">Team</th>
+          <th style="border:1px solid #eee; padding:10px 12px; background:#f7f7f7; text-align:right;">Rating</th>
+        </tr>
+      </thead><tbody>`;
+
+    for (const it of items) {
+      html += `<tr>
+        <td style="border:1px solid #eee; padding:10px 12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(it.name)}</td>
+        <td style="border:1px solid #eee; padding:10px 12px; text-align:right; font-variant-numeric:tabular-nums;">${escapeHtml(it.value)}</td>
+      </tr>`;
+    }
+    html += `</tbody></table>`;
+    table2El.innerHTML = html;
+  }
+
+  async function loadAll() {
     try {
       setStatus("Обновление…");
 
-      // анти-кэш, чтобы ТВ не залипал
-      const url = CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now();
+      const [big, small] = await Promise.all([
+        fetchRange(GID_DANNYE, RANGE_BIG),
+        fetchRange(GID_DANNYE, RANGE_SMALL),
+      ]);
 
-      const resp = await fetch(url, { cache: "no-store" });
-      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      // Диаграмма 1: топ-20, без нулей
+      renderBars(chart1El, big, { topN: 20, hideZero: true });
 
-      const text = await resp.text();
-      const rows = parseCSV(text);
-      const { header, data } = normalizeRows(rows);
-
-      renderTable(header, data);
-      renderBars(header, data);
+      // Диаграмма 2: показываем всё (и таблицу тоже)
+      renderBars(chart2El, small, { topN: null, hideZero: false });
+      renderTable2(small);
 
       const now = new Date();
       const hh = String(now.getHours()).padStart(2,"0");
@@ -313,14 +224,15 @@
       const ss = String(now.getSeconds()).padStart(2,"0");
       setStatus(`Обновлено: ${hh}:${mm}:${ss}`);
     } catch (e) {
-      chartEl.innerHTML = `<div class="error">Не удалось загрузить данные.<br>Ошибка: ${escapeHtml(e.message)}</div>`;
-      tableWrap.innerHTML = `<div class="error">Проверь, что таблица опубликована и ссылка доступна без авторизации.</div>`;
+      chart1El.innerHTML = `<div class="error">Ошибка загрузки диаграммы 1: ${escapeHtml(e.message)}<br>Проверь публикацию листа и доступность.</div>`;
+      chart2El.innerHTML = `<div class="error">Ошибка загрузки диаграммы 2: ${escapeHtml(e.message)}</div>`;
+      table2El.innerHTML = `<div class="error">Таблица не обновилась из-за ошибки.</div>`;
       setStatus("Ошибка");
     }
   }
 
-  loadAndRender();
-  setInterval(loadAndRender, REFRESH_MS);
+  loadAll();
+  setInterval(loadAll, REFRESH_MS);
 </script>
 </body>
 </html>

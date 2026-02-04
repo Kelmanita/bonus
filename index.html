@@ -153,10 +153,6 @@
       overflow: visible;
       align-items: center;
     }
-
-    .xlabels.compact{
-      padding-top: 18px;   /* было 6px — опускаем ниже */
-    }
     
     .xlabel{
       display:block;
@@ -174,11 +170,12 @@
 
     /* ==== ENG/PL: узкие столбики по ширине (только лейблы и расчёты, canvas сам рисует) ==== */
     .xlabels.compact{
-      display:flex;
-      justify-content:center;
-      gap:40px;                 /* должно совпадать с gap в canvas */
-      padding: 6px 30px 0 30px;
-      padding-top: 28px !important;  /* опускаем весь блок с именами */
+      display: grid;
+      grid-auto-flow: column;
+      justify-content: center;
+      align-items: start;
+      column-gap: 40px; /* ДОЛЖНО совпадать с gap в canvas */
+      padding-top: 28px;
     }
 
     /* ========= Таблица сумм ========= */
@@ -222,6 +219,10 @@
 
     /* FORCE: двигаем подписи ТОЛЬКО в ENG/PL */
     .xlabels.compact .xlabel{
+      width: 72px;                 /* = barW */
+      text-align: center;
+      font-weight: 900;
+      font-size: 18px;
       transform: translate(-14px, 22px) rotate(-60deg) !important; /* влево + вниз */
       transform-origin: top center !important;
     }
@@ -458,7 +459,7 @@
       // bar sizing
       const n = items.length;
       const gap = compact ? 40 : 8;
-      const barW = compact ? 48 : Math.max(10, Math.floor((W - gap*(n-1)) / n));
+      const barW = compact ? 72 : Math.max(10, Math.floor((W - gap*(n-1)) / n));
       const totalW = compact ? (n * barW + (n-1)*gap) : (n * barW + (n-1)*gap);
       let startX = padL + Math.max(0, (W - totalW) / 2);
 
@@ -551,6 +552,7 @@
 </script>
 </body>
 </html>
+
 
 
 

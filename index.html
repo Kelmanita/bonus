@@ -6,16 +6,16 @@
   <title>Bonus Dashboard</title>
 
   <style>
-    html, body {
+    html, body{
       margin:0; padding:0;
       width:100vw; height:100vh;
       overflow:hidden;
       background:#fff;
       font-family: Arial, sans-serif;
     }
-    body { font-size: 18px; }
+    body{ font-size:18px; }
 
-    .wrap { height:100vh; display:flex; flex-direction:column; }
+    .wrap{ height:100vh; display:flex; flex-direction:column; }
 
     .topbar{
       display:flex; justify-content:space-between; align-items:center;
@@ -42,13 +42,11 @@
       min-height:0;
     }
 
-
     .row2 > .card:last-child{
-      justify-self: center;   /* по горизонтали */
-      align-self: center;     /* по вертикали */
-      width: 50%; 
+      justify-self:center;
+      align-self:center;
+      width:50%;
     }
-
 
     .card{
       border:1px solid #eee;
@@ -61,9 +59,9 @@
       flex-direction:column;
     }
 
-    .card.engpl {
-      width: 75%;          /* ← минус 25% */
-      margin: 0 auto;      /* центрируем */
+    .card.engpl{
+      width:75%;       /* -25% */
+      margin:0 auto;   /* центрируем */
     }
 
     .card h2{
@@ -72,14 +70,7 @@
       display:flex;
       align-items:center;
       gap:10px;
-      flex: 0 0 auto;
-    }
-    .pill{
-      font-size:14px;
-      padding:3px 10px;
-      border-radius:999px;
-      border:1px solid #eee;
-      background:#fafafa;
+      flex:0 0 auto;
     }
 
     .chartHost{ flex:1 1 auto; min-height:0; }
@@ -90,12 +81,11 @@
       display:grid;
       grid-template-rows: 22px 2fr 1fr;
       gap:8px;
+      min-height:0;
     }
-
     .vwrap.compact{
       grid-template-rows: 22px 2.2fr 1.3fr;
     }
-
 
     .cap{
       display:flex;
@@ -113,16 +103,12 @@
       border:1px solid #eee;
       border-radius:12px;
       overflow:hidden;
-      background:
-        linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
+      background: linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
       background-size:100% 20%;
+      min-height:0;
     }
 
-    canvas{
-      width:100%;
-      height:100%;
-      display:block;
-    }
+    canvas{ width:100%; height:100%; display:block; }
 
     .targetLabel{
       position:absolute;
@@ -149,53 +135,67 @@
     .xlabels{
       display:grid;
       gap:6px;
-      padding: 6px 10px 0px 10px;
-      overflow: visible;
-      align-items: center;
+      padding: 6px 10px 0 10px;
+      overflow:hidden;     /* важно: не вылезаем */
+      align-items:center;
+      min-width:0;
     }
-    
+
     .xlabel{
       display:block;
       width:100%;
       text-align:center;
       white-space:nowrap;
       font-weight:900;
-      font-size: 55px;
+      font-size:55px;      /* большой шрифт */
       line-height:1.05;
-
       transform: translate(-12px, 10px) rotate(-60deg);
-      transform-origin: center;
+      transform-origin:center;
       user-select:none;
     }
 
-    /* ==== ENG/PL: узкие столбики по ширине (только лейблы и расчёты, canvas сам рисует) ==== */
+    /* ==== ENG/PL layout for 3 agents ==== */
     .xlabels.compact{
-      display: grid;
-      grid-auto-flow: column;
-      justify-content: center;
-      align-items: center;
-      column-gap: 40px; /* ДОЛЖНО совпадать с gap в canvas */
-      padding-top: 28px;
+      display:grid;
+      grid-auto-flow:column;
+      justify-content:center;
+      align-items:center;
+      column-gap:40px;     /* должно совпадать с gap в canvas для compact */
+      padding-top:28px;
     }
 
-    /* ========= Таблица сумм ========= */
+    /* FORCE: подписи только в ENG/PL */
+    .xlabels.compact .xlabel{
+      width:72px;                 /* = barW (compact) */
+      text-align:center;
+      font-weight:900;
+      font-size:45px;
+
+      transform-origin: bottom center !important;
+      transform: translate(-24px, 28px) rotate(-60deg) !important;
+      user-select:none;
+    }
+
+    /* ===== Team ratings table ===== */
     #sumTableWrap{
       flex:1 1 auto;
       min-height:0;
       overflow:hidden;
-      
-    }.sumTable{
+      border-radius:18px;
+      box-shadow:0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    .sumTable{
       width:100%;
       border-collapse:separate;
       border-spacing:0;
-      font-size:55px;                 /* БОЛЬШОЙ шрифт */
+      font-size:55px;
       font-weight:900;
       text-align:center;
       border-radius:16px;
       overflow:hidden;
     }
-    
-    /* header */
+
     .sumTable thead th{
       background:#86b97a;
       color:#000;
@@ -203,91 +203,62 @@
       font-size:55px;
       letter-spacing:0.5px;
     }
-    
-    /* body rows */
-    .sumTable tbody tr{
-      background:#fff;
-    }
-    
-    .sumTable tbody tr:not(:last-child){
-      border-bottom:2px solid #e5e7eb;
-    }
-    
-    /* cells */
+
     .sumTable td{
       padding:20px 12px;
       vertical-align:middle;
       text-align:center;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-    
-    /* левая колонка */
-    .sumLabel{
-      font-size:55px;
-    }
-    
-    /* правая колонка (суммы) */
+
+    .sumLabel{ font-size:55px; }
     .sumVal{
       font-size:55px;
       font-variant-numeric: tabular-nums;
+      text-align:center; /* суммы по центру */
     }
-    
-    /* мягкая рамка вокруг всей таблицы */
-    #sumTableWrap{
-      border-radius:18px;
-      box-shadow:0 8px 24px rgba(0,0,0,0.06);
-      overflow:hidden;
-    }
+
+    /* prevent overflow issues in grids */
+    .card, .chartHost, .plot, .vwrap { min-width:0; }
 
     @media (max-width: 900px){
       .row2{ grid-template-columns:1fr; }
+      .row2 > .card:last-child{ width:100%; }
+      .card.engpl{ width:100%; }
+      .xlabel{ font-size:34px; }
+      .sumTable, .sumTable thead th, .sumLabel, .sumVal{ font-size:34px; }
     }
-
-    /* FORCE: двигаем подписи ТОЛЬКО в ENG/PL */
-    .xlabels.compact .xlabel{
-      width: 72px;
-      text-align: center;
-      font-weight: 900;
-      font-size: 45px;
-    
-      /* якорь снизу — текст “растёт” вниз, не залезает вверх на график */
-      transform-origin: bottom center !important;
-    
-      /* сначала поворачиваем, потом уводим вниз/влево */
-      transform: translate(-24px, 28px) rotate(-60deg) !important;
-    
-      user-select: none;
-    }
-
-    
   </style>
 </head>
 
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="title">Bonus dashboard</div>
-    <div class="status" id="status">Загрузка…</div>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <h2>RU</h2>
-      <div id="chartRU" class="chartHost"></div>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">Bonus dashboard</div>
+      <div class="status" id="status">Загрузка…</div>
     </div>
 
-    <div class="row2">
-      <div class="card engpl">
-        <h2>ENG / PL </h2>
-        <div id="chartENGPL" class="chartHost"></div>
-      </div>
-
+    <div class="grid">
       <div class="card">
-        <h2>Team ratings </h2>
-        <div id="sumTableWrap"></div>
+        <h2>RU</h2>
+        <div id="chartRU" class="chartHost"></div>
+      </div>
+
+      <div class="row2">
+        <div class="card engpl">
+          <h2>ENG / PL</h2>
+          <div id="chartENGPL" class="chartHost"></div>
+        </div>
+
+        <div class="card">
+          <h2>Team ratings</h2>
+          <div id="sumTableWrap"></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
 <script>
   const SPREADSHEET_ID = "123_11_j3y3KJhh45yomAOSFp3qP0Un7ePHxjcXQEhfs";
@@ -296,11 +267,8 @@
   const TARGET = 150000;
   const REFRESH_MS = 90000;
 
-  // === ВЫБЕРИ РЕЖИМ ВИДИМОСТИ МАЛЫХ ЗНАЧЕНИЙ ===
-  // true = “как Excel наглядно” (малые значения видны минимум 1.2% высоты)
-  // false = строго честная пропорция
   const MAKE_SMALL_VALUES_VISIBLE = true;
-  const MIN_VISIBLE_PCT = 1.2;   // минимальная видимая высота столбика в %
+  const MIN_VISIBLE_PCT = 1.2;
 
   const RANGES = {
     ru: "G2:H28",
@@ -374,21 +342,14 @@
   }
 
   const STRICT_PALETTE = [
-      "#1f2937", // тёмно-серый
-      "#334155", // slate
-      "#0f766e", // тёмный teal
-      "#1e40af", // тёмно-синий
-      "#6b21a8", // тёмный фиолетовый
-      "#7c2d12", // коричневый
-      "#065f46", // тёмно-зелёный
-      "#3f3f46"  // графит
-    ];
-    
-    function colorForName(name) {
-      const i = hashString(name) % STRICT_PALETTE.length;
-      return STRICT_PALETTE[i];
-    }
+    "#1f2937","#334155","#0f766e","#1e40af",
+    "#6b21a8","#7c2d12","#065f46","#3f3f46"
+  ];
 
+  function colorForName(name) {
+    const i = hashString(name) % STRICT_PALETTE.length;
+    return STRICT_PALETTE[i];
+  }
 
   function niceMax(v) {
     if (v <= 0) return 1;
@@ -403,15 +364,12 @@
   }
 
   function draw3DBar(ctx, x, y, w, h, color) {
-    // “Excel-like” 3D: front + top + side
     const depth = Math.min(10, Math.max(4, w * 0.18));
     const top = Math.min(10, Math.max(4, w * 0.18));
 
-    // front
     ctx.fillStyle = color;
     ctx.fillRect(x, y, w, h);
 
-    // top face (lighter)
     ctx.fillStyle = "rgba(255,255,255,0.28)";
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -421,7 +379,6 @@
     ctx.closePath();
     ctx.fill();
 
-    // side face (darker)
     ctx.fillStyle = "rgba(0,0,0,0.18)";
     ctx.beginPath();
     ctx.moveTo(x + w, y);
@@ -431,9 +388,27 @@
     ctx.closePath();
     ctx.fill();
 
-    // shadow
     ctx.fillStyle = "rgba(0,0,0,0.12)";
     ctx.fillRect(x, y + h, w, 6);
+  }
+
+  // ✅ подгонка подписей по ширине (НЕ уменьшаем font-size, только scaleX)
+  function fitLabelsX(labelsEl) {
+    labelsEl.style.transform = "none";
+    labelsEl.style.transformOrigin = "top center";
+
+    const parent = labelsEl.parentElement;
+    if (!parent) return;
+
+    const available = parent.clientWidth;
+    const needed = labelsEl.scrollWidth;
+
+    if (!available || !needed) return;
+
+    if (needed > available) {
+      const scaleX = Math.max(0.6, available / needed);
+      labelsEl.style.transform = `scaleX(${scaleX})`;
+    }
   }
 
   function renderCanvasChart(container, pairs, opts = {}) {
@@ -460,7 +435,6 @@
           `}
           <canvas></canvas>
         </div>
-
         <div class="xlabels ${compact ? "compact" : ""}"></div>
       </div>
     `;
@@ -469,13 +443,15 @@
     const canvas = container.querySelector("canvas");
     const labelsEl = container.querySelector(".xlabels");
 
-    // labels
     if (compact) {
       labelsEl.innerHTML = items.map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`).join("");
     } else {
       labelsEl.style.gridTemplateColumns = `repeat(${items.length}, 1fr)`;
       labelsEl.innerHTML = items.map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`).join("");
     }
+
+    // ✅ важный вызов — ТОЛЬКО тут, где labelsEl существует
+    requestAnimationFrame(() => fitLabelsX(labelsEl));
 
     function redraw() {
       const rect = plot.getBoundingClientRect();
@@ -490,34 +466,28 @@
       ctx.setTransform(dpr,0,0,dpr,0,0);
       ctx.clearRect(0,0,rect.width,rect.height);
 
-      // layout paddings inside plot
       const padL = 14, padR = 22, padT = 14, padB = 22;
       const W = rect.width - padL - padR;
       const H = rect.height - padT - padB;
 
-      // platform (oldschool)
       ctx.fillStyle = "rgba(0,0,0,0.06)";
       ctx.fillRect(padL, padT + H + 6, W, 10);
 
-      // bar sizing
       const n = items.length;
       const gap = compact ? 40 : 8;
       const barW = compact ? 72 : Math.max(10, Math.floor((W - gap*(n-1)) / n));
-      const totalW = compact ? (n * barW + (n-1)*gap) : (n * barW + (n-1)*gap);
-      let startX = padL + Math.max(0, (W - totalW) / 2);
+      const totalW = (n * barW + (n-1)*gap);
+      const startX = padL + Math.max(0, (W - totalW) / 2);
 
-      // draw bars
+      // ✅ чтобы подписи не вылетали после ресайза
+      fitLabelsX(labelsEl);
+
       items.forEach((it, i) => {
         const rawPct = (it.value / axisMax) * 100;
         let pct = Math.max(0, Math.min(100, rawPct));
-
-        // наглядность малых значений
-        if (MAKE_SMALL_VALUES_VISIBLE && it.value > 0) {
-          pct = Math.max(pct, MIN_VISIBLE_PCT);
-        }
+        if (MAKE_SMALL_VALUES_VISIBLE && it.value > 0) pct = Math.max(pct, MIN_VISIBLE_PCT);
 
         const h = (pct/100) * H;
-
         const x = startX + i*(barW + gap);
         const y = padT + (H - h);
 
@@ -527,9 +497,8 @@
         ctx.fillStyle = "#000";
         ctx.font = "800 50px Arial";
         ctx.textAlign = "center";
-        ctx.fillText(String(it.value), x + barW/2, Math.max(12, y - 6));
+        ctx.fillText(String(it.value), x + barW/2, Math.max(50, y - 10));
 
-        // if zero -> draw tiny flat line
         if (it.value <= 0) {
           ctx.fillStyle = color;
           ctx.fillRect(x, padT + H - 2, barW, 2);
@@ -549,7 +518,7 @@
     sumTableWrap.innerHTML = `
       <table class="sumTable">
         <thead>
-          <tr><th class="sumHead" colspan="2">Team ratings 📊</th></tr>
+          <tr><th colspan="2">Team ratings 📊</th></tr>
         </thead>
         <tbody>
           ${rows.map(r => `
@@ -568,8 +537,8 @@
       statusEl.textContent = "Загрузка…";
 
       const [ruText, engplText, sumsText] = await Promise.all([
-        fetch(csvUrl(RANGES.ru), { cache:"no-store" }).then(r => r.text()),
-        fetch(csvUrl(RANGES.engpl), { cache:"no-store" }).then(r => r.text()),
+        fetch(csvUrl(RANGES.ru),   { cache:"no-store" }).then(r => r.text()),
+        fetch(csvUrl(RANGES.engpl),{ cache:"no-store" }).then(r => r.text()),
         fetch(csvUrl(RANGES.sums), { cache:"no-store" }).then(r => r.text()),
       ]);
 
@@ -595,40 +564,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

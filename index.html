@@ -37,7 +37,7 @@
 
     .row2{
       display:grid;
-      grid-template-columns: 0.7fr 1.3fr; /* диаграмма | зона под таблицу */
+      grid-template-columns: 0.7fr 1.3fr;
       gap:0;
       min-height:0;
     }
@@ -60,8 +60,8 @@
     }
 
     .card.engpl{
-      width:75%;       /* -25% */
-      margin:0 auto;   /* центрируем */
+      width:75%;
+      margin:0 auto;
     }
 
     .card h2{
@@ -131,74 +131,55 @@
       pointer-events:none;
     }
 
-    /* ==== Labels ==== */
+    /* ==== Labels base ==== */
     .xlabels{
-      display:grid;
-      gap:6px;
       padding: 6px 10px 0 10px;
-      overflow:hidden;     /* важно: не вылезаем */
+      overflow:hidden;
       align-items:center;
       min-width:0;
     }
 
+    /* ===== RU labels: ABSOLUTE pinned to bars ===== */
     .xlabels.ru{
       position:relative;
       height:100%;
       overflow:hidden;
+      transform-origin: top center; /* для scaleX */
     }
 
     .xlabels.ru .xlabel{
       position:absolute;
       left:0;
       top:0;
-    
-      /* Крупный шрифт как ты хочешь */
       font-weight:900;
       font-size:55px;
       line-height:1.05;
       white-space:nowrap;
-    
-      /* ВАЖНО: якорь снизу, чтобы не лезло на график */
       transform-origin: bottom center;
-    
-      /* центрируем по X, потом поворот, потом уводим вниз */
+      /* центр по X, поворот, потом "влево/вниз" */
       transform: translate(-50%, 0) rotate(-60deg) translate(-12px, 80px);
       user-select:none;
     }
 
-    .xlabel{
-      display:block;
-      width:100%;
-      text-align:center;
-      white-space:nowrap;
-      font-weight:900;
-      font-size:55px;      /* большой шрифт */
-      line-height:1.05;
-      transform: translate(-12px, 10px) rotate(-60deg);
-      transform-origin:center;
-      user-select:none;
-    }
-
-    /* ==== ENG/PL layout for 3 agents ==== */
+    /* ===== ENG/PL labels (3 agents) ===== */
     .xlabels.compact{
       display:grid;
       grid-auto-flow:column;
       justify-content:center;
       align-items:center;
-      column-gap:40px;     /* должно совпадать с gap в canvas для compact */
+      column-gap:40px;    /* должно совпасть с gap в canvas для compact */
       padding-top:28px;
     }
 
-    /* FORCE: подписи только в ENG/PL */
     .xlabels.compact .xlabel{
-      width:72px;                 /* = barW (compact) */
+      width:72px;              /* = barW compact */
       text-align:center;
       font-weight:900;
       font-size:45px;
-
       transform-origin: bottom center !important;
       transform: translate(-24px, 28px) rotate(-60deg) !important;
       user-select:none;
+      white-space:nowrap;
     }
 
     /* ===== Team ratings table ===== */
@@ -242,7 +223,7 @@
     .sumVal{
       font-size:55px;
       font-variant-numeric: tabular-nums;
-      text-align:center; /* суммы по центру */
+      text-align:center;
     }
 
     /* prevent overflow issues in grids */
@@ -252,7 +233,7 @@
       .row2{ grid-template-columns:1fr; }
       .row2 > .card:last-child{ width:100%; }
       .card.engpl{ width:100%; }
-      .xlabel{ font-size:34px; }
+      .xlabels.ru .xlabel{ font-size:34px; }
       .sumTable, .sumTable thead th, .sumLabel, .sumVal{ font-size:34px; }
     }
   </style>
@@ -311,6 +292,7 @@
   }
 
   function parseCSV(text) {
+    if (!text) return [];
     if (text && text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
     const rows = [];
     let row = [];
@@ -417,8 +399,10 @@
     ctx.fillRect(x, y + h, w, 6);
   }
 
-  // ✅ подгонка подписей по ширине (НЕ уменьшаем font-size, только scaleX)
-  function fitLabelsX(labelsEl) {
+  // RU: сжимаем подписи только по X, если они не влезают
+  function fitLabelsX_ru(labelsEl) {
+    if (!labelsEl || !labelsEl.classList.contains("ru")) return;
+
     labelsEl.style.transform = "none";
     labelsEl.style.transformOrigin = "top center";
 
@@ -439,8 +423,20 @@
   function renderCanvasChart(container, pairs, opts = {}) {
     const compact = !!opts.compact;
 
-    let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
+    let items = (pairs || []).map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
     items.sort((a,b) => b.value - a.value);
+
+    // если данных нет — рисуем пустой блок, но не падаем
+    if (!items.length) {
+      container.innerHTML = `
+        <div class="vwrap ${compact ? "compact" : ""}">
+          <div class="cap"></div>
+          <div class="plot"><div style="padding:14px; opacity:.6;">Нет данных</div></div>
+          <div class="xlabels ${compact ? "compact" : ""}"></div>
+        </div>
+      `;
+      return;
+    }
 
     const maxData = Math.max(0, ...items.map(x => x.value));
     const axisMax = niceMax(maxData || 1);
@@ -468,19 +464,15 @@
     const canvas = container.querySelector("canvas");
     const labelsEl = container.querySelector(".xlabels");
 
-   if (compact) {
+    if (compact) {
       labelsEl.classList.remove("ru");
       labelsEl.innerHTML = items.map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`).join("");
     } else {
       labelsEl.classList.add("ru");
-      // ВАЖНО: без grid-template-columns — RU теперь absolute
       labelsEl.innerHTML = items.map((it, idx) =>
         `<div class="xlabel" data-i="${idx}" title="${esc(it.name)}">${esc(it.name)}</div>`
       ).join("");
     }
-
-    // ✅ важный вызов — ТОЛЬКО тут, где labelsEl существует
-    requestAnimationFrame(() => fitLabelsX(labelsEl));
 
     function redraw() {
       const rect = plot.getBoundingClientRect();
@@ -503,26 +495,30 @@
       ctx.fillRect(padL, padT + H + 6, W, 10);
 
       const n = items.length;
+
+      // ✅ правильный порядок объявлений (без rawBarW ошибки)
       const gap = compact ? 40 : 6;
-      const maxBarW = 70;
-      const barW = compact ? 72 : Math.min(maxBarW, rawBarW);
+
       const rawBarW = compact
         ? 72
         : Math.max(10, Math.floor((W - gap*(n-1)) / n));
-      const totalW = (n * barW + (n-1)*gap);
+
+      const maxBarW = 70;                 // RU максимум ширины (чтобы влезало)
+      const barW = compact ? 72 : Math.min(maxBarW, rawBarW);
+
+      const totalW = n * barW + (n-1)*gap;
       const startX = padL + Math.max(0, (W - totalW) / 2);
 
+      // ✅ RU: позиционируем подписи точно под центрами столбиков
       if (!compact) {
-      const labelNodes = labelsEl.querySelectorAll(".xlabel");
-      labelNodes.forEach((el, i) => {
-        const cx = startX + i * (barW + gap) + barW / 2;
-        el.style.left = `${cx}px`; // центр подписи ровно под центром столбика
-      });
-    }
-      
-
-      // ✅ чтобы подписи не вылетали после ресайза
-      fitLabelsX(labelsEl);
+        const labelNodes = labelsEl.querySelectorAll(".xlabel");
+        labelNodes.forEach((el, i) => {
+          const cx = startX + i * (barW + gap) + barW / 2;
+          el.style.left = `${cx}px`;
+        });
+        // и только после расстановки — scaleX если не влезают
+        fitLabelsX_ru(labelsEl);
+      }
 
       items.forEach((it, i) => {
         const rawPct = (it.value / axisMax) * 100;
@@ -535,7 +531,6 @@
 
         const color = colorForName(it.name);
 
-        // value label
         ctx.fillStyle = "#000";
         ctx.font = "800 50px Arial";
         ctx.textAlign = "center";
@@ -555,7 +550,7 @@
   }
 
   function renderSumsTable(pairs) {
-    const rows = pairs.slice(0, 4).map(r => [r[0] ?? "", toNumber(r[1])]);
+    const rows = (pairs || []).slice(0, 4).map(r => [r[0] ?? "", toNumber(r[1])]);
 
     sumTableWrap.innerHTML = `
       <table class="sumTable">
@@ -579,9 +574,9 @@
       statusEl.textContent = "Загрузка…";
 
       const [ruText, engplText, sumsText] = await Promise.all([
-        fetch(csvUrl(RANGES.ru),   { cache:"no-store" }).then(r => r.text()),
-        fetch(csvUrl(RANGES.engpl),{ cache:"no-store" }).then(r => r.text()),
-        fetch(csvUrl(RANGES.sums), { cache:"no-store" }).then(r => r.text()),
+        fetch(csvUrl(RANGES.ru),   { cache:"no-store" }).then(r => r.text()).catch(() => ""),
+        fetch(csvUrl(RANGES.engpl),{ cache:"no-store" }).then(r => r.text()).catch(() => ""),
+        fetch(csvUrl(RANGES.sums), { cache:"no-store" }).then(r => r.text()).catch(() => ""),
       ]);
 
       const ru = parseCSV(ruText);
@@ -606,4 +601,3 @@
 </script>
 </body>
 </html>
-

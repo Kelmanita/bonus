@@ -93,7 +93,7 @@
     }
 
     .vwrap.compact{
-      grid-template-rows: 22px 2.2fr 1fr;
+      grid-template-rows: 22px 2.2fr 1.3fr;
     }
 
 
@@ -173,7 +173,7 @@
       display: grid;
       grid-auto-flow: column;
       justify-content: center;
-      align-items: start;
+      align-items: end;
       column-gap: 40px; /* ДОЛЖНО совпадать с gap в canvas */
       padding-top: 28px;
     }
@@ -219,12 +219,18 @@
 
     /* FORCE: двигаем подписи ТОЛЬКО в ENG/PL */
     .xlabels.compact .xlabel{
-      width: 72px;                 /* = barW */
+      width: 72px;
       text-align: center;
       font-weight: 900;
       font-size: 22px;
-      transform: translate(-14px, 22px) rotate(-60deg) !important; /* влево + вниз */
-      transform-origin: end center !important;
+    
+      /* якорь снизу — текст “растёт” вниз, не залезает вверх на график */
+      transform-origin: bottom center !important;
+    
+      /* сначала поворачиваем, потом уводим вниз/влево */
+      transform: rotate(-60deg) translate(-18px, 28px) !important;
+    
+      user-select: none;
     }
 
     
@@ -552,6 +558,7 @@
 </script>
 </body>
 </html>
+
 
 
 

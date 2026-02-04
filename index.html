@@ -178,13 +178,7 @@
       justify-content:center;
       gap:40px;                 /* должно совпадать с gap в canvas */
       padding: 6px 30px 0 30px;
-    }
-    
-    .xlabels.compact .xlabel{
-      width:48px;
-      text-align:center;
-      transform: translate(-9px, 16px) rotate(-60deg); /* ↓ опустили */
-      transform-origin: center;
+      padding-top: 28px !important;  /* опускаем весь блок с именами */
     }
 
     /* ========= Таблица сумм ========= */
@@ -225,6 +219,14 @@
     @media (max-width: 900px){
       .row2{ grid-template-columns:1fr; }
     }
+
+    /* FORCE: двигаем подписи ТОЛЬКО в ENG/PL */
+    .xlabels.compact .xlabel{
+      transform: translate(-14px, 22px) rotate(-60deg) !important; /* влево + вниз */
+      transform-origin: top center !important;
+    }
+
+    
   </style>
 </head>
 
@@ -549,6 +551,7 @@
 </script>
 </body>
 </html>
+
 
 
 

@@ -141,6 +141,31 @@
       min-width:0;
     }
 
+    .xlabels.ru{
+      position:relative;
+      height:100%;
+      overflow:hidden;
+    }
+
+    .xlabels.ru .xlabel{
+      position:absolute;
+      left:0;
+      top:0;
+    
+      /* Крупный шрифт как ты хочешь */
+      font-weight:900;
+      font-size:55px;
+      line-height:1.05;
+      white-space:nowrap;
+    
+      /* ВАЖНО: якорь снизу, чтобы не лезло на график */
+      transform-origin: bottom center;
+    
+      /* центрируем по X, потом поворот, потом уводим вниз */
+      transform: translate(-50%, 0) rotate(-60deg) translate(-12px, 80px);
+      user-select:none;
+    }
+
     .xlabel{
       display:block;
       width:100%;
@@ -443,11 +468,15 @@
     const canvas = container.querySelector("canvas");
     const labelsEl = container.querySelector(".xlabels");
 
-    if (compact) {
+   if (compact) {
+      labelsEl.classList.remove("ru");
       labelsEl.innerHTML = items.map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`).join("");
     } else {
-      labelsEl.style.gridTemplateColumns = `repeat(${items.length}, 1fr)`;
-      labelsEl.innerHTML = items.map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`).join("");
+      labelsEl.classList.add("ru");
+      // ВАЖНО: без grid-template-columns — RU теперь absolute
+      labelsEl.innerHTML = items.map((it, idx) =>
+        `<div class="xlabel" data-i="${idx}" title="${esc(it.name)}">${esc(it.name)}</div>`
+      ).join("");
     }
 
     // ✅ важный вызов — ТОЛЬКО тут, где labelsEl существует
@@ -474,10 +503,23 @@
       ctx.fillRect(padL, padT + H + 6, W, 10);
 
       const n = items.length;
-      const gap = compact ? 40 : 8;
-      const barW = compact ? 72 : Math.max(10, Math.floor((W - gap*(n-1)) / n));
+      const gap = compact ? 40 : 6;
+      const maxBarW = 70;
+      const barW = compact ? 72 : Math.min(maxBarW, rawBarW);
+      const rawBarW = compact
+        ? 72
+        : Math.max(10, Math.floor((W - gap*(n-1)) / n));
       const totalW = (n * barW + (n-1)*gap);
       const startX = padL + Math.max(0, (W - totalW) / 2);
+
+      if (!compact) {
+      const labelNodes = labelsEl.querySelectorAll(".xlabel");
+      labelNodes.forEach((el, i) => {
+        const cx = startX + i * (barW + gap) + barW / 2;
+        el.style.left = `${cx}px`; // центр подписи ровно под центром столбика
+      });
+    }
+      
 
       // ✅ чтобы подписи не вылетали после ресайза
       fitLabelsX(labelsEl);
@@ -564,3 +606,4 @@
 </script>
 </body>
 </html>
+

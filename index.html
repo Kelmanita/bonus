@@ -479,8 +479,6 @@
       const totalW = n * barW + (n-1) * gap;
       let startX = padL + Math.max(0, (W - totalW) / 2);
 
-      fitLabelsX(labelsEl);
-
       items.forEach((it, i) => {
         const rawPct = (it.value / axisMax) * 100;
         let pct = Math.max(0, Math.min(100, rawPct));
@@ -562,3 +560,4 @@
 </script>
 </body>
 </html>
+

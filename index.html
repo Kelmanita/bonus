@@ -37,7 +37,7 @@
 
     .row2{
       display:grid;
-      grid-template-columns: 0.7fr 1.3fr;
+      grid-template-columns: 0.7fr 1.3fr; /* диаграмма | зона под таблицу */
       gap:0;
       min-height:0;
     }
@@ -72,9 +72,17 @@
       gap:10px;
       flex: 0 0 auto;
     }
+    .pill{
+      font-size:14px;
+      padding:3px 10px;
+      border-radius:999px;
+      border:1px solid #eee;
+      background:#fafafa;
+    }
 
     .chartHost{ flex:1 1 auto; min-height:0; }
 
+    /* ==== Chart wrapper ==== */
     .vwrap{
       height:100%;
       display:grid;
@@ -134,12 +142,14 @@
       pointer-events:none;
     }
 
+    /* ==== Labels ==== */
     .xlabels{
       display:grid;
       gap:6px;
       padding: 6px 10px 0px 10px;
       overflow: hidden;
       align-items: center;
+      min-width:0;
     }
 
     .xlabel{
@@ -150,26 +160,28 @@
       font-weight:900;
       font-size: 55px;
       line-height:1.05;
+
       transform: translate(-12px, 10px) rotate(-60deg);
       transform-origin: center;
       user-select:none;
     }
 
+    /* ==== ENG/PL compact labels ==== */
     .xlabels.compact{
       display: grid;
       grid-auto-flow: column;
       justify-content: center;
       align-items: center;
-      column-gap: 40px;
+      column-gap: 40px; /* совпадает с gap в canvas для compact */
       padding-top: 28px;
     }
 
+    /* ========= Таблица сумм ========= */
     #sumTableWrap{
       flex:1 1 auto;
       min-height:0;
       overflow:hidden;
     }
-
     .sumTable{
       width:100%;
       border-collapse:separate;
@@ -203,7 +215,9 @@
       text-align:center;
     }
 
-    .sumLabel{ font-size:55px; }
+    .sumLabel{
+      font-size:55px;
+    }
 
     .sumVal{
       font-size:55px;
@@ -220,13 +234,16 @@
       .row2{ grid-template-columns:1fr; }
     }
 
+    /* FORCE: двигаем подписи ТОЛЬКО в ENG/PL */
     .xlabels.compact .xlabel{
       width: 72px;
       text-align: center;
       font-weight: 900;
       font-size: 45px;
+
       transform-origin: bottom center !important;
       transform: translate(-24px, 28px) rotate(-60deg) !important;
+
       user-select: none;
     }
 
@@ -251,12 +268,12 @@
 
     <div class="row2">
       <div class="card engpl">
-        <h2>ENG / PL</h2>
+        <h2>ENG / PL </h2>
         <div id="chartENGPL" class="chartHost"></div>
       </div>
 
       <div class="card">
-        <h2>Team ratings</h2>
+        <h2>Team ratings </h2>
         <div id="sumTableWrap"></div>
       </div>
     </div>
@@ -270,6 +287,7 @@
   const TARGET = 150000;
   const REFRESH_MS = 90000;
 
+  // true = “как Excel наглядно” (малые значения видны минимум 1.2% высоты)
   const MAKE_SMALL_VALUES_VISIBLE = true;
   const MIN_VISIBLE_PCT = 1.2;
 
@@ -345,8 +363,14 @@
   }
 
   const STRICT_PALETTE = [
-    "#1f2937","#334155","#0f766e","#1e40af",
-    "#6b21a8","#7c2d12","#065f46","#3f3f46"
+    "#1f2937",
+    "#334155",
+    "#0f766e",
+    "#1e40af",
+    "#6b21a8",
+    "#7c2d12",
+    "#065f46",
+    "#3f3f46"
   ];
 
   function colorForName(name) {
@@ -446,15 +470,43 @@
     const canvas = container.querySelector("canvas");
     const labelsEl = container.querySelector(".xlabels");
 
-    if (compact) {
-      labelsEl.innerHTML = items.map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`).join("");
-    } else {
-      labelsEl.style.gridTemplateColumns = `repeat(${items.length}, 1fr)`;
-      labelsEl.innerHTML = items.map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`).join("");
+    // строим подписи
+    labelsEl.innerHTML = items
+      .map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`)
+      .join("");
+
+    // синхронизация геометрии лейблов с геометрией столбиков
+    function syncLabelsLayout(rectWidth) {
+      const padL = 14, padR = 22; // как в redraw()
+      const W = rectWidth - padL - padR;
+
+      const n = items.length;
+      const gap = compact ? 40 : 8;
+
+      const barW = compact ? 72 : Math.max(10, Math.floor((W - gap * (n - 1)) / n));
+
+      if (compact) {
+        labelsEl.style.display = "grid";
+        labelsEl.style.gridAutoFlow = "column";
+        labelsEl.style.justifyContent = "center";
+        labelsEl.style.alignItems = "center";
+        labelsEl.style.columnGap = gap + "px";
+        [...labelsEl.children].forEach(el => (el.style.width = barW + "px"));
+      } else {
+        labelsEl.style.display = "flex";
+        labelsEl.style.justifyContent = "center";
+        labelsEl.style.alignItems = "center";
+        labelsEl.style.gap = gap + "px";
+        [...labelsEl.children].forEach(el => (el.style.width = barW + "px"));
+      }
+
+      fitLabelsX(labelsEl);
     }
 
     function redraw() {
       const rect = plot.getBoundingClientRect();
+      syncLabelsLayout(rect.width);
+
       const dpr = window.devicePixelRatio || 1;
 
       canvas.width = Math.floor(rect.width * dpr);
@@ -476,15 +528,19 @@
       const n = items.length;
       const gap = compact ? 40 : 8;
       const barW = compact ? 72 : Math.max(10, Math.floor((W - gap*(n-1)) / n));
-      const totalW = n * barW + (n-1) * gap;
+      const totalW = n * barW + (n-1)*gap;
       let startX = padL + Math.max(0, (W - totalW) / 2);
 
       items.forEach((it, i) => {
         const rawPct = (it.value / axisMax) * 100;
         let pct = Math.max(0, Math.min(100, rawPct));
-        if (MAKE_SMALL_VALUES_VISIBLE && it.value > 0) pct = Math.max(pct, MIN_VISIBLE_PCT);
+
+        if (MAKE_SMALL_VALUES_VISIBLE && it.value > 0) {
+          pct = Math.max(pct, MIN_VISIBLE_PCT);
+        }
 
         const h = (pct/100) * H;
+
         const x = startX + i*(barW + gap);
         const y = padT + (H - h);
 
@@ -560,4 +616,3 @@
 </script>
 </body>
 </html>
-

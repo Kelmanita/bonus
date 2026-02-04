@@ -348,10 +348,22 @@
     return h >>> 0;
   }
 
-  function colorForName(name) {
-    const h = hashString(name) % 360;
-    return `hsl(${h} 70% 45%)`;
-  }
+  const STRICT_PALETTE = [
+      "#1f2937", // тёмно-серый
+      "#334155", // slate
+      "#0f766e", // тёмный teal
+      "#1e40af", // тёмно-синий
+      "#6b21a8", // тёмный фиолетовый
+      "#7c2d12", // коричневый
+      "#065f46", // тёмно-зелёный
+      "#3f3f46"  // графит
+    ];
+    
+    function colorForName(name) {
+      const i = hashString(name) % STRICT_PALETTE.length;
+      return STRICT_PALETTE[i];
+    }
+
 
   function niceMax(v) {
     if (v <= 0) return 1;
@@ -488,7 +500,7 @@
 
         // value label
         ctx.fillStyle = "#000";
-        ctx.font = "700 21px Arial";
+        ctx.font = "800 24px Arial";
         ctx.textAlign = "center";
         ctx.fillText(String(it.value), x + barW/2, Math.max(12, y - 6));
 
@@ -558,6 +570,7 @@
 </script>
 </body>
 </html>
+
 
 
 

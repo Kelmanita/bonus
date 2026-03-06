@@ -37,15 +37,19 @@
 
     .row2{
       display:grid;
-      grid-template-columns: 0.7fr 1.3fr; /* диаграмма | зона под таблицу */
+      grid-template-columns: 1fr; /* диаграмма | зона под таблицу */
       gap:0;
       min-height:0;
+    }
+
+    .row2 > .card:first-child{
+      display:none;
     }
 
     .row2 > .card:last-child{
       justify-self: center;
       align-self: center;
-      width: 50%;
+      width: 40%;
     }
 
     .card{
@@ -616,3 +620,4 @@
 </script>
 </body>
 </html>
+

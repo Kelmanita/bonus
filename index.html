@@ -190,57 +190,105 @@ function toNumber(v) {
   return Number(String(v).replace(/\s/g,"").replace(",","."))||0;
 }
 
-function renderChart(container, data, compact=false){
+```javascript
+function renderChart(container, pairs, opts = {}) {
+
+  const compact = !!opts.compact;
+
+  let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
+  items.sort((a,b) => b.value - a.value);
 
   container.innerHTML = `
-    <div class="vwrap ${compact?"compact":""}">
+    <div class="vwrap ${compact ? "compact" : ""}">
       <div></div>
-      <div class="plot"><canvas></canvas></div>
-      <div class="xlabels ${compact?"compact":""}"></div>
+      <div class="plot">
+        <canvas></canvas>
+      </div>
+      <div class="xlabels ${compact ? "compact" : ""}"></div>
     </div>
   `;
 
+  const plot = container.querySelector(".plot");
   const canvas = container.querySelector("canvas");
-  const labels = container.querySelector(".xlabels");
+  const labelsEl = container.querySelector(".xlabels");
 
-  const items = data.map(r=>({
-    name:r[0],
-    value:toNumber(r[1])
-  })).sort((a,b)=>b.value-a.value);
+  labelsEl.innerHTML = items
+    .map(it => `<div class="xlabel">${it.name}</div>`)
+    .join("");
 
-  labels.innerHTML = items.map(i=>`<div class="xlabel">${i.name}</div>`).join("");
+  function syncLabelsLayout(rectWidth) {
+    const pad = 14;
+    const W = rectWidth - pad * 2;
 
-  function redraw(){
-    const rect = canvas.parentElement.getBoundingClientRect();
-    if(!rect.width || !rect.height) return;
+    const n = items.length;
+    const gap = compact ? 40 : 8;
 
+    const barW = (W - gap * (n - 1)) / n;
+
+    if (compact) {
+      labelsEl.style.display = "grid";
+      labelsEl.style.gridAutoFlow = "column";
+      labelsEl.style.justifyContent = "center";
+      labelsEl.style.columnGap = gap + "px";
+      [...labelsEl.children].forEach(el => el.style.width = barW + "px");
+    } else {
+      labelsEl.style.display = "flex";
+      labelsEl.style.justifyContent = "center";
+      labelsEl.style.gap = gap + "px";
+      [...labelsEl.children].forEach(el => el.style.width = barW + "px");
+    }
+  }
+
+  function redraw() {
+
+    const rect = plot.getBoundingClientRect();
+
+    /* ===== FIX 1: защита ===== */
+    if (!rect.width || !rect.height) return;
+
+    syncLabelsLayout(rect.width);
+
+    /* ===== FIX 2: DPR ===== */
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
-    canvas.width = rect.width*dpr;
-    canvas.height = rect.height*dpr;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
 
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.clearRect(0,0,rect.width,rect.height);
 
-    const max = Math.max(...items.map(x=>x.value),1);
-    const gap = compact ? 40 : 8;
-    const barW = (rect.width - gap*(items.length-1)) / items.length;
+    const pad = 14;
+    const W = rect.width - pad * 2;
+    const H = rect.height - pad * 2;
 
-    items.forEach((it,i)=>{
-      const h = (it.value/max)*rect.height;
-      const x = i*(barW+gap);
-      ctx.fillStyle="#333";
-      ctx.fillRect(x, rect.height-h, barW, h);
+    const max = Math.max(...items.map(x => x.value), 1);
+
+    const gap = compact ? 40 : 8;
+    const barW = (W - gap * (items.length - 1)) / items.length;
+
+    let startX = pad;
+
+    items.forEach((it, i) => {
+
+      const h = (it.value / max) * H;
+
+      const x = startX + i * (barW + gap);
+      const y = pad + (H - h);
+
+      ctx.fillStyle = "#333";
+      ctx.fillRect(x, y, barW, h);
+
     });
   }
 
   redraw();
 
+  /* ===== FIX 3: resize ===== */
   let resizeTimeout;
-  window.addEventListener("resize", ()=>{
+  window.addEventListener("resize", () => {
     clearTimeout(resizeTimeout);
-    resizeTimeout=setTimeout(redraw,100);
+    resizeTimeout = setTimeout(redraw, 100);
   });
 }
 
@@ -267,8 +315,8 @@ async function loadAll(){
       fetch(csvUrl(RANGES.sums)).then(r=>r.text())
     ]);
 
-    renderChart(chartRU, parseCSV(ru), false);
-    renderChart(chartENGPL, parseCSV(engpl), true);
+    renderChart(chartRU, parseCSV(ru), { compact:false });
+    renderChart(chartENGPL, parseCSV(engpl), { compact:true });
     renderTable(parseCSV(sums));
 
     statusEl.textContent="Обновлено "+new Date().toLocaleTimeString();

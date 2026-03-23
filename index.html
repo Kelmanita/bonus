@@ -104,8 +104,10 @@ canvas{
 .xlabel{
   text-align:center;
   font-weight:900;
-  font-size:55px;
-  transform:translate(-12px,10px) rotate(-60deg);
+  font-size:18px;
+
+  transform: rotate(-60deg);
+  transform-origin: top center;
 }
 
 .xlabels.compact{
@@ -261,8 +263,24 @@ function renderChart(container, pairs, opts = {}) {
       const x = pad + i * (barW + gap);
       const y = pad + (H - h);
 
-      ctx.fillStyle = "#333";
+      /* ==== цвет ==== */
+      const gradient = ctx.createLinearGradient(0, y, 0, y + h);
+      gradient.addColorStop(0, "#67e8f9");
+      gradient.addColorStop(1, "#0891b2");
+      
+      ctx.fillStyle = gradient;
       ctx.fillRect(x, y, barW, h);
+      
+      /* ==== значение над столбиком ==== */
+      ctx.font = "900 20px Arial";
+      ctx.fillStyle = "#000";
+      ctx.textAlign = "center";
+      
+      ctx.fillText(
+        it.value.toLocaleString(),
+        x + barW / 2,
+        y - 5
+    );
     });
   }
 

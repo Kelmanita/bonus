@@ -1,132 +1,262 @@
+НАШ САЙТ БОНУСЫ 
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Bonus Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bonus Dashboard</title>
 
-<style>
-html, body {
-  margin:0; padding:0;
-  width:100vw; height:100vh;
-  overflow:hidden;
-  background:#fff;
-  font-family: Arial, sans-serif;
-}
-body { font-size: 18px; }
+  <style>
+    html, body {
+      margin:0; padding:0;
+      width:100vw; height:100vh;
+      overflow:hidden;
+      background:#fff;
+      font-family: Arial, sans-serif;
+    }
+    body { font-size: 18px; }
 
-.wrap { height:100vh; display:flex; flex-direction:column; }
+    .wrap { height:100vh; display:flex; flex-direction:column; }
 
-.topbar{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:14px 18px;
-  border-bottom:1px solid #eee;
-}
-.title{ font-size:22px; font-weight:800; }
-.status{ font-size:16px; opacity:.75; white-space:nowrap; }
+    .topbar{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 18px;
+      border-bottom:1px solid #eee;
+    }
+    .title{ font-size:22px; font-weight:800; }
+    .status{ font-size:16px; opacity:.75; white-space:nowrap; }
 
-.grid{
-  flex:1;
-  display:grid;
-  grid-template-rows: 1.7fr 1.3fr;
-  gap:14px;
-  padding:14px 18px;
-  box-sizing:border-box;
-  min-height:0;
-}
+    .grid{
+      flex:1;
+      display:grid;
+      grid-template-rows: 1.7fr 1.3fr;
+      gap:14px;
+      padding:14px 18px;
+      box-sizing:border-box;
+      min-height:0;
+    }
 
-.row2{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap:0;
-  min-height:0;
-}
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr; /* диаграмма | зона под таблицу */
+      gap:0;
+      min-height:0;
+    }
 
-.row2 > .card:first-child{ display:none; }
+    .row2 > .card:first-child{
+      display:none;
+    }
 
-.row2 > .card:last-child{
-  justify-self: center;
-  align-self: center;
-  width: 40%;
-}
+    .row2 > .card:last-child{
+      justify-self: center;
+      align-self: center;
+      width: 40%;
+    }
 
-.card{
-  border:1px solid #eee;
-  border-radius:14px;
-  padding:14px;
-  box-sizing:border-box;
-  min-height:0;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
+    .card{
+      border:1px solid #eee;
+      border-radius:14px;
+      padding:14px;
+      box-sizing:border-box;
+      min-height:0;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
 
-.card.engpl {
-  width: 75%;
-  margin: 0 auto;
-}
+    .card.engpl {
+      width: 75%;
+      margin: 0 auto;
+    }
 
-.chartHost{ flex:1 1 auto; min-height:0; }
+    .card h2{
+      margin:0 0 10px 0;
+      font-size:22px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex: 0 0 auto;
+    }
+    .pill{
+      font-size:14px;
+      padding:3px 10px;
+      border-radius:999px;
+      border:1px solid #eee;
+      background:#fafafa;
+    }
 
-.vwrap{
-  height:100%;
-  display:grid;
-  grid-template-rows: 22px 2fr 1fr;
-  gap:8px;
-}
+    .chartHost{ flex:1 1 auto; min-height:0; }
 
-.vwrap.compact{
-  grid-template-rows: 22px 2.2fr 1.3fr;
-}
+    /* ==== Chart wrapper ==== */
+    .vwrap{
+      height:100%;
+      display:grid;
+      grid-template-rows: 22px 2fr 1fr;
+      gap:8px;
+    }
 
-.plot{
-  position:relative;
-  border:1px solid #eee;
-  border-radius:12px;
-  overflow:hidden;
-  background:
-    linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
-  background-size:100% 20%;
-}
+    .vwrap.compact{
+      grid-template-rows: 22px 2.2fr 1.3fr;
+    }
 
-canvas{
-  width:100%;
-  height:100%;
-  display:block;
-}
+    .cap{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:15px;
+      opacity:.75;
+      padding:0 6px;
+      white-space:nowrap;
+      user-select:none;
+    }
 
-.xlabels{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  padding:6px 10px 0;
-}
+    .plot{
+      position:relative;
+      border:1px solid #eee;
+      border-radius:12px;
+      overflow:hidden;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
+      background-size:100% 20%;
+    }
 
-.xlabel{
-  width:60px;
-  text-align:center;
-  font-weight:700;
-  font-size:14px;
-  transform: rotate(-60deg);
-  transform-origin: top center;
-}
+    canvas{
+      width:100%;
+      height:100%;
+      display:block;
+    }
 
-.xlabels.compact{
-  gap:40px;
-}
+    .targetLabel{
+      position:absolute;
+      right:8px;
+      font-size:13px;
+      font-weight:900;
+      color:#e11d48;
+      background:rgba(255,255,255,.92);
+      padding:2px 6px;
+      border-radius:999px;
+      white-space:nowrap;
+      pointer-events:none;
+    }
+    .targetLine{
+      position:absolute;
+      left:0; right:0;
+      height:2px;
+      background:#e11d48;
+      opacity:.85;
+      pointer-events:none;
+    }
 
-.sumTable{
-  width:100%;
-  font-size:55px;
-  font-weight:900;
-  text-align:center;
-}
+    /* ==== Labels ==== */
+    .xlabels{
+      display:grid;
+      gap:6px;
+      padding: 6px 10px 0px 10px;
+      overflow: hidden;
+      align-items: center;
+      min-width:0;
+    }
 
-.card, .chartHost, .plot, .vwrap{
-  min-width:0;
-  min-height:0;
-}
-</style>
+    .xlabel{
+      display:block;
+      width:100%;
+      text-align:center;
+      white-space:nowrap;
+      font-weight:900;
+      font-size: 55px;
+      line-height:1.05;
+
+      transform: translate(-12px, 10px) rotate(-60deg);
+      transform-origin: center;
+      user-select:none;
+    }
+
+    /* ==== ENG/PL compact labels ==== */
+    .xlabels.compact{
+      display: grid;
+      grid-auto-flow: column;
+      justify-content: center;
+      align-items: center;
+      column-gap: 40px; /* совпадает с gap в canvas для compact */
+      padding-top: 28px;
+    }
+
+    /* ========= Таблица сумм ========= */
+    #sumTableWrap{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:hidden;
+    }
+    .sumTable{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      font-size:55px;
+      font-weight:900;
+      text-align:center;
+      border-radius:16px;
+      overflow:hidden;
+    }
+
+    .sumTable thead th{
+      background:#86b97a;
+      color:#000;
+      padding:18px 12px;
+      font-size:55px;
+      letter-spacing:0.5px;
+    }
+
+    .sumTable tbody tr{
+      background:#fff;
+    }
+
+    .sumTable tbody tr:not(:last-child){
+      border-bottom:2px solid #e5e7eb;
+    }
+
+    .sumTable td{
+      padding:20px 12px;
+      vertical-align:middle;
+      text-align:center;
+    }
+
+    .sumLabel{
+      font-size:55px;
+    }
+
+    .sumVal{
+      font-size:55px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #sumTableWrap{
+      border-radius:18px;
+      box-shadow:0 8px 24px rgba(0,0,0,0.06);
+      overflow:hidden;
+    }
+
+    @media (max-width: 900px){
+      .row2{ grid-template-columns:1fr; }
+    }
+
+    /* FORCE: двигаем подписи ТОЛЬКО в ENG/PL */
+    .xlabels.compact .xlabel{
+      width: 72px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 45px;
+
+      transform-origin: bottom center !important;
+      transform: translate(-24px, 28px) rotate(-60deg) !important;
+
+      user-select: none;
+    }
+
+    .card, .chartHost, .plot, .vwrap{
+      min-width: 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -144,12 +274,12 @@ canvas{
 
     <div class="row2">
       <div class="card engpl">
-        <h2>ENG / PL</h2>
+        <h2>ENG / PL </h2>
         <div id="chartENGPL" class="chartHost"></div>
       </div>
 
       <div class="card">
-        <h2>Team ratings</h2>
+        <h2>Team ratings </h2>
         <div id="sumTableWrap"></div>
       </div>
     </div>
@@ -157,164 +287,339 @@ canvas{
 </div>
 
 <script>
-const SPREADSHEET_ID = "123_11_j3y3KJhh45yomAOSFp3qP0Un7ePHxjcXQEhfs";
-const GID = "1932060383";
-const REFRESH_MS = 90000;
+  const SPREADSHEET_ID = "123_11_j3y3KJhh45yomAOSFp3qP0Un7ePHxjcXQEhfs";
+  const GID = "1932060383";
 
-const RANGES = {
-  ru: "G2:H28",
-  engpl: "C2:D8",
-  sums: "P25:Q28",
-};
+  const TARGET = 150000;
+  const REFRESH_MS = 90000;
 
-const COLORS = [
-  "#1f2937","#334155","#0f766e","#1e40af",
-  "#6b21a8","#7c2d12","#065f46","#3f3f46",
-  "#0ea5e9","#16a34a","#dc2626","#9333ea"
-];
+  // true = “как Excel наглядно” (малые значения видны минимум 1.2% высоты)
+  const MAKE_SMALL_VALUES_VISIBLE = true;
+  const MIN_VISIBLE_PCT = 1.2;
 
-const statusEl = document.getElementById("status");
-const chartRU = document.getElementById("chartRU");
-const chartENGPL = document.getElementById("chartENGPL");
-const sumTableWrap = document.getElementById("sumTableWrap");
+  const RANGES = {
+    ru: "G2:H28",
+    engpl: "C2:D8",
+    sums: "P25:Q28",
+  };
 
-function csvUrl(range) {
-  return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${GID}&range=${range}&t=${Date.now()}`;
-}
+  const statusEl = document.getElementById("status");
+  const chartRU = document.getElementById("chartRU");
+  const chartENGPL = document.getElementById("chartENGPL");
+  const sumTableWrap = document.getElementById("sumTableWrap");
 
-function parseCSV(text) {
-  return text.split("\n").map(r=>r.split(","));
-}
+  function csvUrl(range) {
+    return `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SPREADSHEET_ID)}/export?format=csv&gid=${encodeURIComponent(GID)}&range=${encodeURIComponent(range)}&t=${Date.now()}`;
+  }
 
-function toNumber(v) {
-  return Number(String(v).replace(/\s/g,"").replace(",","."))||0;
-}
+  function parseCSV(text) {
+    if (text && text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    const rows = [];
+    let row = [];
+    let cell = "";
+    let inQuotes = false;
 
-function renderChart(container, pairs, opts = {}) {
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      const next = text[i + 1];
 
-  const compact = !!opts.compact;
+      if (ch === '"' && inQuotes && next === '"') { cell += '"'; i++; continue; }
+      if (ch === '"') { inQuotes = !inQuotes; continue; }
 
-  let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
-  items.sort((a,b) => b.value - a.value);
+      if (ch === "\n" && !inQuotes) {
+        row.push(cell); rows.push(row);
+        row = []; cell = "";
+        continue;
+      }
+      if (ch === "\r") continue;
 
-  container.innerHTML = `
-    <div class="vwrap ${compact ? "compact" : ""}">
-      <div></div>
-      <div class="plot">
-        <canvas></canvas>
+      if (ch === "," && !inQuotes) { row.push(cell); cell = ""; continue; }
+      cell += ch;
+    }
+    row.push(cell); rows.push(row);
+
+    return rows
+      .map(r => (r || []).map(v => (v ?? "").trim()))
+      .filter(r => r.length >= 2 && !(r[0] === "" && r[1] === ""));
+  }
+
+  function toNumber(v) {
+    const s = String(v ?? "").replace(/\s/g, "").replace(",", ".");
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function esc(s) {
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function hashString(s) {
+    s = String(s ?? "");
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  const STRICT_PALETTE = [
+    "#1f2937",
+    "#334155",
+    "#0f766e",
+    "#1e40af",
+    "#6b21a8",
+    "#7c2d12",
+    "#065f46",
+    "#3f3f46"
+  ];
+
+  function colorForName(name) {
+    const i = hashString(name) % STRICT_PALETTE.length;
+    return STRICT_PALETTE[i];
+  }
+
+  function niceMax(v) {
+    if (v <= 0) return 1;
+    const exp = Math.pow(10, Math.floor(Math.log10(v)));
+    const frac = v / exp;
+    let niceFrac;
+    if (frac <= 1) niceFrac = 1;
+    else if (frac <= 2) niceFrac = 2;
+    else if (frac <= 5) niceFrac = 5;
+    else niceFrac = 10;
+    return niceFrac * exp;
+  }
+
+  function draw3DBar(ctx, x, y, w, h, color) {
+    const depth = Math.min(10, Math.max(4, w * 0.18));
+    const top = Math.min(10, Math.max(4, w * 0.18));
+
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + top, y - top);
+    ctx.lineTo(x + w, y - top);
+    ctx.lineTo(x + w - top, y);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    ctx.beginPath();
+    ctx.moveTo(x + w, y);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x + w + depth, y + h - top);
+    ctx.lineTo(x + w + depth, y - top);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    ctx.fillRect(x, y + h, w, 6);
+  }
+
+  function fitLabelsX(labelsEl) {
+    labelsEl.style.transform = "none";
+    labelsEl.style.transformOrigin = "top left";
+
+    const parent = labelsEl.parentElement;
+    if (!parent) return;
+
+    const available = parent.clientWidth;
+    const needed = labelsEl.scrollWidth;
+
+    if (!available || !needed) return;
+
+    if (needed > available) {
+      const scaleX = Math.max(0.6, available / needed);
+      labelsEl.style.transform = `scaleX(${scaleX})`;
+    }
+  }
+
+  function renderCanvasChart(container, pairs, opts = {}) {
+    const compact = !!opts.compact;
+
+    let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
+    items.sort((a,b) => b.value - a.value);
+
+    const maxData = Math.max(0, ...items.map(x => x.value));
+    const axisMax = niceMax(maxData || 1);
+
+    const showTargetInside = TARGET <= axisMax;
+    const targetPct = showTargetInside ? (TARGET / axisMax) * 100 : 100;
+
+    container.innerHTML = `
+      <div class="vwrap ${compact ? "compact" : ""}">
+        <div class="cap"></div>
+        <div class="plot">
+          ${showTargetInside ? `
+            <div class="targetLine" style="bottom:${targetPct}%;"></div>
+            <div class="targetLabel" style="bottom:${targetPct}%; transform:translateY(50%);">ЦЕЛЬ ${esc(TARGET)}</div>
+          ` : `
+            <div class="targetLabel" style="top:10px; transform:none;">ЦЕЛЬ ${esc(TARGET)} (выше)</div>
+          `}
+          <canvas></canvas>
+        </div>
+
+        <div class="xlabels ${compact ? "compact" : ""}"></div>
       </div>
-      <div class="xlabels ${compact ? "compact" : ""}"></div>
-    </div>
-  `;
+    `;
 
-  const plot = container.querySelector(".plot");
-  const canvas = container.querySelector("canvas");
-  const labelsEl = container.querySelector(".xlabels");
+    const plot = container.querySelector(".plot");
+    const canvas = container.querySelector("canvas");
+    const labelsEl = container.querySelector(".xlabels");
 
-  labelsEl.innerHTML = items.map(it => `<div class="xlabel">${it.name}</div>`).join("");
+    // строим подписи
+    labelsEl.innerHTML = items
+      .map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`)
+      .join("");
 
-  function redraw() {
+    // синхронизация геометрии лейблов с геометрией столбиков
+    function syncLabelsLayout(rectWidth) {
+      const padL = 14, padR = 22; // как в redraw()
+      const W = rectWidth - padL - padR;
 
-    const rect = plot.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
+      const n = items.length;
+      const gap = compact ? 40 : 8;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const barW = compact ? 72 : Math.max(10, Math.floor((W - gap * (n - 1)) / n));
 
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+      if (compact) {
+        labelsEl.style.display = "grid";
+        labelsEl.style.gridAutoFlow = "column";
+        labelsEl.style.justifyContent = "center";
+        labelsEl.style.alignItems = "center";
+        labelsEl.style.columnGap = gap + "px";
+        [...labelsEl.children].forEach(el => (el.style.width = barW + "px"));
+      } else {
+        labelsEl.style.display = "flex";
+        labelsEl.style.justifyContent = "center";
+        labelsEl.style.alignItems = "center";
+        labelsEl.style.gap = gap + "px";
+        [...labelsEl.children].forEach(el => (el.style.width = barW + "px"));
+      }
 
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.clearRect(0,0,rect.width,rect.height);
+      fitLabelsX(labelsEl);
+    }
 
-    const padTop = 40;
-    const padBottom = 20;
-    const padSide = 14;
+    function redraw() {
+      const rect = plot.getBoundingClientRect();
+      syncLabelsLayout(rect.width);
 
-    const W = rect.width - padSide * 2;
-    const H = rect.height - padTop - padBottom;
+      const dpr = window.devicePixelRatio || 1;
 
-    const max = Math.max(...items.map(x => x.value), 1);
-    const gap = compact ? 40 : 8;
+      canvas.width = Math.floor(rect.width * dpr);
+      canvas.height = Math.floor(rect.height * dpr);
+      canvas.style.width = rect.width + "px";
+      canvas.style.height = rect.height + "px";
 
-    const barW = Math.max(
-      compact ? 60 : 12,
-      Math.floor((W - gap * (items.length - 1)) / items.length)
-    );
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.clearRect(0,0,rect.width,rect.height);
 
-    const totalWidth = items.length * barW + (items.length - 1) * gap;
-    let startX = padSide + Math.max(0, (W - totalWidth) / 2);
+      const padL = 14, padR = 22, padT = 14, padB = 22;
+      const W = rect.width - padL - padR;
+      const H = rect.height - padT - padB;
 
-    labelsEl.style.gap = gap + "px";
-    [...labelsEl.children].forEach(el => el.style.width = barW + "px");
+      ctx.fillStyle = "rgba(0,0,0,0.06)";
+      ctx.fillRect(padL, padT + H + 6, W, 10);
 
-    items.forEach((it, i) => {
+      const n = items.length;
+      const gap = compact ? 40 : 8;
+      const barW = compact ? 72 : Math.max(10, Math.floor((W - gap*(n-1)) / n));
+      const totalW = n * barW + (n-1)*gap;
+      let startX = padL + Math.max(0, (W - totalW) / 2);
 
-      const h = (it.value / max) * H;
+      items.forEach((it, i) => {
+        const rawPct = (it.value / axisMax) * 100;
+        let pct = Math.max(0, Math.min(100, rawPct));
 
-      const x = startX + i * (barW + gap);
-      const y = padTop + (H - h);
+        if (MAKE_SMALL_VALUES_VISIBLE && it.value > 0) {
+          pct = Math.max(pct, MIN_VISIBLE_PCT);
+        }
 
-      ctx.fillStyle = COLORS[i % COLORS.length];
-      ctx.fillRect(x, y, barW, h);
+        const h = (pct/100) * H;
 
-      ctx.font = "700 14px Arial";
-      ctx.fillStyle = "#000";
-      ctx.textAlign = "center";
+        const x = startX + i*(barW + gap);
+        const y = padT + (H - h);
 
-      ctx.fillText(
-        it.value.toLocaleString(),
-        x + barW / 2,
-        y - 6
-      );
-    });
+        const color = colorForName(it.name);
+
+        ctx.fillStyle = "#000";
+        ctx.font = "800 50px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(String(it.value), x + barW/2, Math.max(12, y - 6));
+
+        if (it.value <= 0) {
+          ctx.fillStyle = color;
+          ctx.fillRect(x, padT + H - 2, barW, 2);
+        } else {
+          draw3DBar(ctx, x, y, barW, h, color);
+        }
+      });
+    }
+
+    redraw();
+    window.addEventListener("resize", redraw, { passive:true });
   }
 
-  redraw();
+  function renderSumsTable(pairs) {
+    const rows = pairs.slice(0, 4).map(r => [r[0] ?? "", toNumber(r[1])]);
 
-  let resizeTimeout;
-  window.addEventListener("resize", () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(redraw, 100);
-  });
-}
-
-function renderTable(data){
-  sumTableWrap.innerHTML = `
-    <table class="sumTable">
-      ${data.map(r=>`
-        <tr>
-          <td>${r[0]}</td>
-          <td>${r[1]}</td>
-        </tr>
-      `).join("")}
-    </table>
-  `;
-}
-
-async function loadAll(){
-  try{
-    statusEl.textContent="Загрузка...";
-
-    const [ru,engpl,sums]=await Promise.all([
-      fetch(csvUrl(RANGES.ru)).then(r=>r.text()),
-      fetch(csvUrl(RANGES.engpl)).then(r=>r.text()),
-      fetch(csvUrl(RANGES.sums)).then(r=>r.text())
-    ]);
-
-    renderChart(chartRU, parseCSV(ru), { compact:false });
-    renderChart(chartENGPL, parseCSV(engpl), { compact:true });
-    renderTable(parseCSV(sums));
-
-    statusEl.textContent="Обновлено "+new Date().toLocaleTimeString();
-
-  }catch(e){
-    statusEl.textContent="Ошибка";
+    sumTableWrap.innerHTML = `
+      <table class="sumTable">
+        <thead>
+          <tr><th class="sumHead" colspan="2">Team ratings 📊</th></tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td class="sumLabel">${esc(r[0])}</td>
+              <td class="sumVal">${esc(r[1])}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
   }
-}
 
-loadAll();
-setInterval(loadAll, REFRESH_MS);
+  async function loadAll() {
+    try {
+      statusEl.textContent = "Загрузка…";
+
+      const [ruText, engplText, sumsText] = await Promise.all([
+        fetch(csvUrl(RANGES.ru), { cache:"no-store" }).then(r => r.text()),
+        fetch(csvUrl(RANGES.engpl), { cache:"no-store" }).then(r => r.text()),
+        fetch(csvUrl(RANGES.sums), { cache:"no-store" }).then(r => r.text()),
+      ]);
+
+      const ru = parseCSV(ruText);
+      const engpl = parseCSV(engplText);
+      const sums = parseCSV(sumsText);
+
+      renderCanvasChart(chartRU, ru, { compact:false });
+      renderCanvasChart(chartENGPL, engpl, { compact:true });
+      renderSumsTable(sums);
+
+      statusEl.textContent = "Обновлено: " + new Date().toLocaleTimeString();
+    } catch (e) {
+      chartRU.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
+      chartENGPL.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
+      sumTableWrap.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
+      statusEl.textContent = "Ошибка";
+    }
+  }
+
+  loadAll();
+  setInterval(loadAll, REFRESH_MS);
 </script>
 </body>
 </html>
+

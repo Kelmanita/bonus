@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -96,25 +97,23 @@ canvas{
 }
 
 .xlabels{
-  display:grid;
-  gap:6px;
+  display:flex;
+  justify-content:center;
+  gap:8px;
   padding:6px 10px 0;
 }
 
 .xlabel{
+  width:60px;
   text-align:center;
-  font-weight:900;
-  font-size:18px;
-
+  font-weight:700;
+  font-size:14px;
   transform: rotate(-60deg);
   transform-origin: top center;
 }
 
 .xlabels.compact{
-  display:grid;
-  grid-auto-flow:column;
-  justify-content:center;
-  column-gap:40px;
+  gap:40px;
 }
 
 .sumTable{
@@ -169,6 +168,12 @@ const RANGES = {
   sums: "P25:Q28",
 };
 
+const COLORS = [
+  "#1f2937","#334155","#0f766e","#1e40af",
+  "#6b21a8","#7c2d12","#065f46","#3f3f46",
+  "#0ea5e9","#16a34a","#dc2626","#9333ea"
+];
+
 const statusEl = document.getElementById("status");
 const chartRU = document.getElementById("chartRU");
 const chartENGPL = document.getElementById("chartENGPL");
@@ -209,37 +214,10 @@ function renderChart(container, pairs, opts = {}) {
 
   labelsEl.innerHTML = items.map(it => `<div class="xlabel">${it.name}</div>`).join("");
 
-  function syncLabelsLayout(rectWidth) {
-    const pad = 14;
-    const W = rectWidth - pad * 2;
-
-    const n = items.length;
-    const gap = compact ? 40 : 8;
-
-    const barW = (W - gap * (n - 1)) / n;
-
-    if (compact) {
-      labelsEl.style.display = "grid";
-      labelsEl.style.gridAutoFlow = "column";
-      labelsEl.style.justifyContent = "center";
-      labelsEl.style.columnGap = gap + "px";
-    } else {
-      labelsEl.style.display = "flex";
-      labelsEl.style.justifyContent = "center";
-      labelsEl.style.gap = gap + "px";
-    }
-
-    [...labelsEl.children].forEach(el => {
-      el.style.width = barW + "px";
-    });
-  }
-
   function redraw() {
 
     const rect = plot.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
-
-    syncLabelsLayout(rect.width);
 
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
@@ -250,37 +228,46 @@ function renderChart(container, pairs, opts = {}) {
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.clearRect(0,0,rect.width,rect.height);
 
-    const pad = 14;
-    const W = rect.width - pad * 2;
-    const H = rect.height - pad * 2;
+    const padTop = 40;
+    const padBottom = 20;
+    const padSide = 14;
+
+    const W = rect.width - padSide * 2;
+    const H = rect.height - padTop - padBottom;
 
     const max = Math.max(...items.map(x => x.value), 1);
     const gap = compact ? 40 : 8;
-    const barW = (W - gap * (items.length - 1)) / items.length;
+
+    const barW = Math.max(
+      compact ? 60 : 12,
+      Math.floor((W - gap * (items.length - 1)) / items.length)
+    );
+
+    const totalWidth = items.length * barW + (items.length - 1) * gap;
+    let startX = padSide + Math.max(0, (W - totalWidth) / 2);
+
+    labelsEl.style.gap = gap + "px";
+    [...labelsEl.children].forEach(el => el.style.width = barW + "px");
 
     items.forEach((it, i) => {
-      const h = (it.value / max) * H;
-      const x = pad + i * (barW + gap);
-      const y = pad + (H - h);
 
-      /* ==== цвет ==== */
-      const gradient = ctx.createLinearGradient(0, y, 0, y + h);
-      gradient.addColorStop(0, "#67e8f9");
-      gradient.addColorStop(1, "#0891b2");
-      
-      ctx.fillStyle = gradient;
+      const h = (it.value / max) * H;
+
+      const x = startX + i * (barW + gap);
+      const y = padTop + (H - h);
+
+      ctx.fillStyle = COLORS[i % COLORS.length];
       ctx.fillRect(x, y, barW, h);
-      
-      /* ==== значение над столбиком ==== */
-      ctx.font = "900 20px Arial";
+
+      ctx.font = "700 14px Arial";
       ctx.fillStyle = "#000";
       ctx.textAlign = "center";
-      
+
       ctx.fillText(
         it.value.toLocaleString(),
         x + barW / 2,
-        y - 5
-    );
+        y - 6
+      );
     });
   }
 
@@ -332,3 +319,4 @@ setInterval(loadAll, REFRESH_MS);
 </script>
 </body>
 </html>
+```

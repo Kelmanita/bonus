@@ -207,9 +207,37 @@ function renderChart(container, pairs, opts = {}) {
 
   labelsEl.innerHTML = items.map(it => `<div class="xlabel">${it.name}</div>`).join("");
 
+  function syncLabelsLayout(rectWidth) {
+    const pad = 14;
+    const W = rectWidth - pad * 2;
+
+    const n = items.length;
+    const gap = compact ? 40 : 8;
+
+    const barW = (W - gap * (n - 1)) / n;
+
+    if (compact) {
+      labelsEl.style.display = "grid";
+      labelsEl.style.gridAutoFlow = "column";
+      labelsEl.style.justifyContent = "center";
+      labelsEl.style.columnGap = gap + "px";
+    } else {
+      labelsEl.style.display = "flex";
+      labelsEl.style.justifyContent = "center";
+      labelsEl.style.gap = gap + "px";
+    }
+
+    [...labelsEl.children].forEach(el => {
+      el.style.width = barW + "px";
+    });
+  }
+
   function redraw() {
+
     const rect = plot.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
+
+    syncLabelsLayout(rect.width);
 
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 

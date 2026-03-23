@@ -2,209 +2,177 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bonus Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bonus Dashboard</title>
 
-  <style>
-    html, body {
-      margin:0; padding:0;
-      width:100vw; height:100vh;
-      overflow:hidden;
-      background:#fff;
-      font-family: Arial, sans-serif;
-    }
-    body { font-size: 18px; }
+<style>
+html, body {
+  margin:0; padding:0;
+  width:100vw; height:100vh;
+  overflow:hidden;
+  background:#fff;
+  font-family: Arial, sans-serif;
+}
+body { font-size: 18px; }
 
-    .wrap { height:100vh; display:flex; flex-direction:column; }
+.wrap { height:100vh; display:flex; flex-direction:column; }
 
-    .topbar{
-      display:flex; justify-content:space-between; align-items:center;
-      padding:14px 18px;
-      border-bottom:1px solid #eee;
-    }
-    .title{ font-size:22px; font-weight:800; }
-    .status{ font-size:16px; opacity:.75; white-space:nowrap; }
+.topbar{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 18px;
+  border-bottom:1px solid #eee;
+}
+.title{ font-size:22px; font-weight:800; }
+.status{ font-size:16px; opacity:.75; white-space:nowrap; }
 
-    .grid{
-      flex:1;
-      display:grid;
-      grid-template-rows: 1.7fr 1.3fr;
-      gap:14px;
-      padding:14px 18px;
-      box-sizing:border-box;
-      min-height:0;
-    }
+.grid{
+  flex:1;
+  display:grid;
+  grid-template-rows: 1.7fr 1.3fr;
+  gap:14px;
+  padding:14px 18px;
+  box-sizing:border-box;
+  min-height:0;
+}
 
-    .row2{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:0;
-      min-height:0;
-    }
+.row2{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:0;
+  min-height:0;
+}
 
-    .row2 > .card:first-child{
-      display:none;
-    }
+.row2 > .card:first-child{ display:none; }
 
-    .row2 > .card:last-child{
-      justify-self: center;
-      align-self: center;
-      width: 40%;
-    }
+.row2 > .card:last-child{
+  justify-self: center;
+  align-self: center;
+  width: 40%;
+}
 
-    .card{
-      border:1px solid #eee;
-      border-radius:14px;
-      padding:14px;
-      box-sizing:border-box;
-      min-height:0;
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-    }
+.card{
+  border:1px solid #eee;
+  border-radius:14px;
+  padding:14px;
+  box-sizing:border-box;
+  min-height:0;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
 
-    .card.engpl {
-      width: 75%;
-      margin: 0 auto;
-    }
+.card.engpl {
+  width: 75%;
+  margin: 0 auto;
+}
 
-    .card h2{
-      margin:0 0 10px 0;
-      font-size:22px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex: 0 0 auto;
-    }
+.card h2{
+  margin:0 0 10px 0;
+  font-size:22px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex: 0 0 auto;
+}
 
-    .chartHost{ flex:1 1 auto; min-height:0; }
+.chartHost{ flex:1 1 auto; min-height:0; }
 
-    .vwrap{
-      height:100%;
-      display:grid;
-      grid-template-rows: 22px 2fr 1fr;
-      gap:8px;
-    }
+/* ==== Chart wrapper ==== */
+.vwrap{
+  height:100%;
+  display:grid;
+  grid-template-rows: 22px 2fr 1fr;
+  gap:8px;
+}
 
-    .vwrap.compact{
-      grid-template-rows: 22px 2.2fr 1.3fr;
-    }
+.vwrap.compact{
+  grid-template-rows: 22px 2.2fr 1.3fr;
+}
 
-    .cap{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      font-size:15px;
-      opacity:.75;
-      padding:0 6px;
-      white-space:nowrap;
-      user-select:none;
-    }
+.cap{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:15px;
+  opacity:.75;
+  padding:0 6px;
+}
 
-    .plot{
-      position:relative;
-      border:1px solid #eee;
-      border-radius:12px;
-      overflow:hidden;
-      background:
-        linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
-      background-size:100% 20%;
-    }
+.plot{
+  position:relative;
+  border:1px solid #eee;
+  border-radius:12px;
+  overflow:hidden;
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
+  background-size:100% 20%;
+}
 
-    canvas{
-      width:100%;
-      height:100%;
-      display:block;
-    }
+canvas{
+  width:100%;
+  height:100%;
+  display:block;
+}
 
-    .targetLabel{
-      position:absolute;
-      right:8px;
-      font-size:13px;
-      font-weight:900;
-      color:#e11d48;
-      background:rgba(255,255,255,.92);
-      padding:2px 6px;
-      border-radius:999px;
-      white-space:nowrap;
-      pointer-events:none;
-    }
-    .targetLine{
-      position:absolute;
-      left:0; right:0;
-      height:2px;
-      background:#e11d48;
-      opacity:.85;
-      pointer-events:none;
-    }
+.targetLabel{
+  position:absolute;
+  right:8px;
+  font-size:13px;
+  font-weight:900;
+  color:#e11d48;
+  background:rgba(255,255,255,.92);
+  padding:2px 6px;
+  border-radius:999px;
+}
 
-    .xlabels{
-      display:grid;
-      gap:6px;
-      padding: 6px 10px 0px 10px;
-      overflow: hidden;
-      align-items: center;
-      min-width:0;
-    }
+.targetLine{
+  position:absolute;
+  left:0; right:0;
+  height:2px;
+  background:#e11d48;
+}
 
-    .xlabel{
-      display:block;
-      width:100%;
-      text-align:center;
-      white-space:nowrap;
-      font-weight:900;
-      font-size: 55px;
-      line-height:1.05;
+.xlabels{
+  display:grid;
+  gap:6px;
+  padding: 6px 10px 0px 10px;
+  overflow: hidden;
+  align-items: center;
+}
 
-      transform: translate(-12px, 10px) rotate(-60deg);
-      transform-origin: center;
-      user-select:none;
-    }
+.xlabel{
+  display:block;
+  width:100%;
+  text-align:center;
+  white-space:nowrap;
+  font-weight:900;
+  font-size: 55px;
+  line-height:1.05;
+  transform: translate(-12px, 10px) rotate(-60deg);
+}
 
-    .xlabels.compact{
-      display: grid;
-      grid-auto-flow: column;
-      justify-content: center;
-      align-items: center;
-      column-gap: 40px;
-      padding-top: 28px;
-    }
+.xlabels.compact{
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: center;
+  align-items: center;
+  column-gap: 40px;
+  padding-top: 28px;
+}
 
-    #sumTableWrap{
-      flex:1 1 auto;
-      min-height:0;
-      overflow:hidden;
-    }
+#sumTableWrap{
+  flex:1 1 auto;
+  overflow:hidden;
+}
 
-    .sumTable{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      font-size:55px;
-      font-weight:900;
-      text-align:center;
-      border-radius:16px;
-      overflow:hidden;
-    }
-
-    .sumTable thead th{
-      background:#86b97a;
-      color:#000;
-      padding:18px 12px;
-      font-size:55px;
-    }
-
-    .sumTable td{
-      padding:20px 12px;
-      text-align:center;
-    }
-
-    .card, .chartHost, .plot, .vwrap{
-      min-width: 0;
-      min-height: 0;
-    }
-  </style>
+.sumTable{
+  width:100%;
+  font-size:55px;
+  font-weight:900;
+  text-align:center;
+}
+</style>
 </head>
 
 <body>
@@ -237,7 +205,6 @@
 <script>
 const SPREADSHEET_ID = "123_11_j3y3KJhh45yomAOSFp3qP0Un7ePHxjcXQEhfs";
 const GID = "1932060383";
-const TARGET = 150000;
 const REFRESH_MS = 90000;
 
 const RANGES = {
@@ -263,57 +230,57 @@ function toNumber(v) {
   return Number(String(v).replace(/\s/g,"").replace(",","."))||0;
 }
 
-/* ===== FIXED CHART ===== */
-
-function renderChart(container, data) {
+function renderChart(container, data, compact=false) {
 
   container.innerHTML = `
-    <div class="vwrap">
+    <div class="vwrap ${compact ? "compact":""}">
       <div class="cap"></div>
       <div class="plot"><canvas></canvas></div>
-      <div class="xlabels"></div>
+      <div class="xlabels ${compact ? "compact":""}"></div>
     </div>
   `;
 
   const canvas = container.querySelector("canvas");
-  const labelsEl = container.querySelector(".xlabels");
+  const labels = container.querySelector(".xlabels");
 
-  let items = data.map(r => ({
-    name: r[0],
-    value: toNumber(r[1])
+  const items = data.map(r=>({
+    name:r[0],
+    value:toNumber(r[1])
   })).sort((a,b)=>b.value-a.value);
 
-  labelsEl.innerHTML = items.map(i=>`<div class="xlabel">${i.name}</div>`).join("");
+  labels.innerHTML = items.map(i=>`<div class="xlabel">${i.name}</div>`).join("");
 
-  function redraw() {
+  function redraw(){
     const rect = canvas.parentElement.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
+    if(!rect.width || !rect.height) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+    canvas.width = rect.width*dpr;
+    canvas.height = rect.height*dpr;
 
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.clearRect(0,0,rect.width,rect.height);
 
     const max = Math.max(...items.map(x=>x.value),1);
-    const barW = rect.width / items.length;
+    const gap = compact ? 40 : 8;
+    const barW = (rect.width - gap*(items.length-1)) / items.length;
 
     items.forEach((it,i)=>{
-      const h = (it.value / max) * rect.height;
-      ctx.fillStyle = "#333";
-      ctx.fillRect(i*barW, rect.height-h, barW-6, h);
+      const h = (it.value/max)*rect.height;
+      const x = i*(barW+gap);
+      ctx.fillStyle="#333";
+      ctx.fillRect(x, rect.height-h, barW, h);
     });
   }
 
   redraw();
 
   let resizeTimeout;
-  window.addEventListener("resize", () => {
+  window.addEventListener("resize", ()=>{
     clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(redraw, 100);
+    resizeTimeout=setTimeout(redraw,100);
   });
 }
 
@@ -340,8 +307,8 @@ async function loadAll(){
       fetch(csvUrl(RANGES.sums)).then(r=>r.text())
     ]);
 
-    renderChart(chartRU, parseCSV(ru));
-    renderChart(chartENGPL, parseCSV(engpl));
+    renderChart(chartRU, parseCSV(ru), false);
+    renderChart(chartENGPL, parseCSV(engpl), true);
     renderTable(parseCSV(sums));
 
     statusEl.textContent="Обновлено "+new Date().toLocaleTimeString();

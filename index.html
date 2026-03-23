@@ -1,122 +1,210 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Bonus Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bonus Dashboard</title>
 
-<style>
-* {
-  box-sizing: border-box;
-}
+  <style>
+    html, body {
+      margin:0; padding:0;
+      width:100vw; height:100vh;
+      overflow:hidden;
+      background:#fff;
+      font-family: Arial, sans-serif;
+    }
+    body { font-size: 18px; }
 
-html, body {
-  margin:0; padding:0;
-  width:100vw; height:100vh;
-  overflow:hidden;
-  background:#fff;
-  font-family: Arial, sans-serif;
-}
+    .wrap { height:100vh; display:flex; flex-direction:column; }
 
-body { font-size: 18px; }
+    .topbar{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 18px;
+      border-bottom:1px solid #eee;
+    }
+    .title{ font-size:22px; font-weight:800; }
+    .status{ font-size:16px; opacity:.75; white-space:nowrap; }
 
-.wrap { height:100vh; display:flex; flex-direction:column; }
+    .grid{
+      flex:1;
+      display:grid;
+      grid-template-rows: 1.7fr 1.3fr;
+      gap:14px;
+      padding:14px 18px;
+      box-sizing:border-box;
+      min-height:0;
+    }
 
-.topbar{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:14px 18px;
-  border-bottom:1px solid #eee;
-}
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:0;
+      min-height:0;
+    }
 
-.title{ font-size:22px; font-weight:800; }
-.status{ font-size:16px; opacity:.75; white-space:nowrap; }
+    .row2 > .card:first-child{
+      display:none;
+    }
 
-.grid{
-  flex:1;
-  display:grid;
-  grid-template-rows: 1.7fr 1.3fr;
-  gap:14px;
-  padding:14px 18px;
-  min-height:0;
-}
+    .row2 > .card:last-child{
+      justify-self: center;
+      align-self: center;
+      width: 40%;
+    }
 
-.row2{
-  display:grid;
-  grid-template-columns: 1fr;
-  min-height:0;
-}
+    .card{
+      border:1px solid #eee;
+      border-radius:14px;
+      padding:14px;
+      box-sizing:border-box;
+      min-height:0;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
 
-.row2 > .card:first-child{ display:none; }
+    .card.engpl {
+      width: 75%;
+      margin: 0 auto;
+    }
 
-.row2 > .card:last-child{
-  justify-self: center;
-  align-self: center;
-  width: 40%;
-}
+    .card h2{
+      margin:0 0 10px 0;
+      font-size:22px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex: 0 0 auto;
+    }
 
-.card{
-  border:1px solid #eee;
-  border-radius:14px;
-  padding:14px;
-  min-height:0;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
+    .chartHost{ flex:1 1 auto; min-height:0; }
 
-.card.engpl {
-  width: 75%;
-  margin: 0 auto;
-}
+    .vwrap{
+      height:100%;
+      display:grid;
+      grid-template-rows: 22px 2fr 1fr;
+      gap:8px;
+    }
 
-.card h2{
-  margin:0 0 10px 0;
-  font-size:22px;
-}
+    .vwrap.compact{
+      grid-template-rows: 22px 2.2fr 1.3fr;
+    }
 
-.chartHost{
-  flex:1 1 auto;
-  min-height:0;
-  min-width:0;
-}
+    .cap{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:15px;
+      opacity:.75;
+      padding:0 6px;
+      white-space:nowrap;
+      user-select:none;
+    }
 
-.plot{
-  position:relative;
-  border:1px solid #eee;
-  border-radius:12px;
-  overflow:hidden;
-  min-height:0;
-}
+    .plot{
+      position:relative;
+      border:1px solid #eee;
+      border-radius:12px;
+      overflow:hidden;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
+      background-size:100% 20%;
+    }
 
-canvas{
-  width:100%;
-  height:100%;
-  display:block;
-}
+    canvas{
+      width:100%;
+      height:100%;
+      display:block;
+    }
 
-.xlabels{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  padding-top:10px;
-}
+    .targetLabel{
+      position:absolute;
+      right:8px;
+      font-size:13px;
+      font-weight:900;
+      color:#e11d48;
+      background:rgba(255,255,255,.92);
+      padding:2px 6px;
+      border-radius:999px;
+      white-space:nowrap;
+      pointer-events:none;
+    }
+    .targetLine{
+      position:absolute;
+      left:0; right:0;
+      height:2px;
+      background:#e11d48;
+      opacity:.85;
+      pointer-events:none;
+    }
 
-.xlabel{
-  font-weight:900;
-  font-size:40px;
-  transform: rotate(-60deg);
-  transform-origin: bottom;
-}
+    .xlabels{
+      display:grid;
+      gap:6px;
+      padding: 6px 10px 0px 10px;
+      overflow: hidden;
+      align-items: center;
+      min-width:0;
+    }
 
-/* таблица */
-.sumTable{
-  width:100%;
-  font-size:40px;
-  font-weight:900;
-  text-align:center;
-}
+    .xlabel{
+      display:block;
+      width:100%;
+      text-align:center;
+      white-space:nowrap;
+      font-weight:900;
+      font-size: 55px;
+      line-height:1.05;
 
-</style>
+      transform: translate(-12px, 10px) rotate(-60deg);
+      transform-origin: center;
+      user-select:none;
+    }
+
+    .xlabels.compact{
+      display: grid;
+      grid-auto-flow: column;
+      justify-content: center;
+      align-items: center;
+      column-gap: 40px;
+      padding-top: 28px;
+    }
+
+    #sumTableWrap{
+      flex:1 1 auto;
+      min-height:0;
+      overflow:hidden;
+    }
+
+    .sumTable{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      font-size:55px;
+      font-weight:900;
+      text-align:center;
+      border-radius:16px;
+      overflow:hidden;
+    }
+
+    .sumTable thead th{
+      background:#86b97a;
+      color:#000;
+      padding:18px 12px;
+      font-size:55px;
+    }
+
+    .sumTable td{
+      padding:20px 12px;
+      text-align:center;
+    }
+
+    .card, .chartHost, .plot, .vwrap{
+      min-width: 0;
+      min-height: 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -134,12 +222,12 @@ canvas{
 
     <div class="row2">
       <div class="card engpl">
-        <h2>ENG / PL</h2>
+        <h2>ENG / PL </h2>
         <div id="chartENGPL" class="chartHost"></div>
       </div>
 
       <div class="card">
-        <h2>Team ratings</h2>
+        <h2>Team ratings </h2>
         <div id="sumTableWrap"></div>
       </div>
     </div>
@@ -149,7 +237,6 @@ canvas{
 <script>
 const SPREADSHEET_ID = "123_11_j3y3KJhh45yomAOSFp3qP0Un7ePHxjcXQEhfs";
 const GID = "1932060383";
-
 const TARGET = 150000;
 const REFRESH_MS = 90000;
 
@@ -176,15 +263,16 @@ function toNumber(v) {
   return Number(String(v).replace(/\s/g,"").replace(",","."))||0;
 }
 
-/* ===== СТАБИЛЬНЫЙ CHART ===== */
+/* ===== FIXED CHART ===== */
 
 function renderChart(container, data) {
 
   container.innerHTML = `
-    <div class="plot">
-      <canvas></canvas>
+    <div class="vwrap">
+      <div class="cap"></div>
+      <div class="plot"><canvas></canvas></div>
+      <div class="xlabels"></div>
     </div>
-    <div class="xlabels"></div>
   `;
 
   const canvas = container.querySelector("canvas");
@@ -199,7 +287,6 @@ function renderChart(container, data) {
 
   function redraw() {
     const rect = canvas.parentElement.getBoundingClientRect();
-
     if (!rect.width || !rect.height) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -212,13 +299,12 @@ function renderChart(container, data) {
     ctx.clearRect(0,0,rect.width,rect.height);
 
     const max = Math.max(...items.map(x=>x.value),1);
-
     const barW = rect.width / items.length;
 
     items.forEach((it,i)=>{
       const h = (it.value / max) * rect.height;
       ctx.fillStyle = "#333";
-      ctx.fillRect(i*barW, rect.height-h, barW-4, h);
+      ctx.fillRect(i*barW, rect.height-h, barW-6, h);
     });
   }
 
@@ -230,8 +316,6 @@ function renderChart(container, data) {
     resizeTimeout = setTimeout(redraw, 100);
   });
 }
-
-/* ===== TABLE ===== */
 
 function renderTable(data){
   sumTableWrap.innerHTML = `
@@ -245,8 +329,6 @@ function renderTable(data){
     </table>
   `;
 }
-
-/* ===== LOAD ===== */
 
 async function loadAll(){
   try{
@@ -271,7 +353,7 @@ async function loadAll(){
 
 loadAll();
 setInterval(loadAll, REFRESH_MS);
-
 </script>
 </body>
 </html>
+```

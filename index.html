@@ -67,11 +67,6 @@ body { font-size: 18px; }
   margin: 0 auto;
 }
 
-.card h2{
-  margin:0 0 10px 0;
-  font-size:22px;
-}
-
 .chartHost{ flex:1 1 auto; min-height:0; }
 
 .vwrap{
@@ -190,7 +185,6 @@ function toNumber(v) {
   return Number(String(v).replace(/\s/g,"").replace(",","."))||0;
 }
 
-```javascript
 function renderChart(container, pairs, opts = {}) {
 
   const compact = !!opts.compact;
@@ -212,43 +206,12 @@ function renderChart(container, pairs, opts = {}) {
   const canvas = container.querySelector("canvas");
   const labelsEl = container.querySelector(".xlabels");
 
-  labelsEl.innerHTML = items
-    .map(it => `<div class="xlabel">${it.name}</div>`)
-    .join("");
-
-  function syncLabelsLayout(rectWidth) {
-    const pad = 14;
-    const W = rectWidth - pad * 2;
-
-    const n = items.length;
-    const gap = compact ? 40 : 8;
-
-    const barW = (W - gap * (n - 1)) / n;
-
-    if (compact) {
-      labelsEl.style.display = "grid";
-      labelsEl.style.gridAutoFlow = "column";
-      labelsEl.style.justifyContent = "center";
-      labelsEl.style.columnGap = gap + "px";
-      [...labelsEl.children].forEach(el => el.style.width = barW + "px");
-    } else {
-      labelsEl.style.display = "flex";
-      labelsEl.style.justifyContent = "center";
-      labelsEl.style.gap = gap + "px";
-      [...labelsEl.children].forEach(el => el.style.width = barW + "px");
-    }
-  }
+  labelsEl.innerHTML = items.map(it => `<div class="xlabel">${it.name}</div>`).join("");
 
   function redraw() {
-
     const rect = plot.getBoundingClientRect();
-
-    /* ===== FIX 1: защита ===== */
     if (!rect.width || !rect.height) return;
 
-    syncLabelsLayout(rect.width);
-
-    /* ===== FIX 2: DPR ===== */
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
     canvas.width = rect.width * dpr;
@@ -263,28 +226,21 @@ function renderChart(container, pairs, opts = {}) {
     const H = rect.height - pad * 2;
 
     const max = Math.max(...items.map(x => x.value), 1);
-
     const gap = compact ? 40 : 8;
     const barW = (W - gap * (items.length - 1)) / items.length;
 
-    let startX = pad;
-
     items.forEach((it, i) => {
-
       const h = (it.value / max) * H;
-
-      const x = startX + i * (barW + gap);
+      const x = pad + i * (barW + gap);
       const y = pad + (H - h);
 
       ctx.fillStyle = "#333";
       ctx.fillRect(x, y, barW, h);
-
     });
   }
 
   redraw();
 
-  /* ===== FIX 3: resize ===== */
   let resizeTimeout;
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimeout);

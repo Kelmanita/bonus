@@ -290,6 +290,9 @@
 
   const TARGET = 150000;
   const REFRESH_MS = 90000;
+  const FETCH_TIMEOUT_MS = 15000;
+  const FETCH_RETRIES = 2;
+  const WATCHDOG_RELOAD_MS = 1000 * 60 * 30;
 
   // true = “как Excel наглядно” (малые значения видны минимум 1.2% высоты)
   const MAKE_SMALL_VALUES_VISIBLE = true;
@@ -305,6 +308,29 @@
   const chartRU = document.getElementById("chartRU");
   const chartENGPL = document.getElementById("chartENGPL");
   const sumTableWrap = document.getElementById("sumTableWrap");
+  const chartStates = new WeakMap();
+  const activeCharts = new Set();
+  const requestDrawFrame = window.requestAnimationFrame
+    ? window.requestAnimationFrame.bind(window)
+    : callback => setTimeout(callback, 16);
+  let resizeRaf = 0;
+  let isLoading = false;
+  let hasLoadedOnce = false;
+  let sumTableRows = [];
+  let lastRuText = "";
+  let lastEngplText = "";
+  let lastSumsText = "";
+
+  window.addEventListener("resize", () => {
+    if (resizeRaf) return;
+    resizeRaf = requestDrawFrame(() => {
+      resizeRaf = 0;
+      activeCharts.forEach(container => {
+        const state = chartStates.get(container);
+        if (state) state.redraw();
+      });
+    });
+  }, { passive:true });
 
   function csvUrl(range) {
     return `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SPREADSHEET_ID)}/export?format=csv&gid=${encodeURIComponent(GID)}&range=${encodeURIComponent(range)}&t=${Date.now()}`;
@@ -349,11 +375,11 @@
 
   function esc(s) {
     return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
   }
 
   function hashString(s) {
@@ -441,45 +467,101 @@
     }
   }
 
+  function ensureCanvasChart(container, compact) {
+    let state = chartStates.get(container);
+
+    if (!state || state.compact !== compact) {
+      container.innerHTML = `
+        <div class="vwrap ${compact ? "compact" : ""}">
+          <div class="cap"></div>
+          <div class="plot">
+            <div class="targetLine"></div>
+            <div class="targetLabel"></div>
+            <canvas></canvas>
+          </div>
+
+          <div class="xlabels ${compact ? "compact" : ""}"></div>
+        </div>
+      `;
+
+      const canvas = container.querySelector("canvas");
+      state = {
+        compact,
+        plot: container.querySelector(".plot"),
+        canvas,
+        ctx: canvas.getContext("2d"),
+        labelsEl: container.querySelector(".xlabels"),
+        targetLine: container.querySelector(".targetLine"),
+        targetLabel: container.querySelector(".targetLabel"),
+        items: [],
+        axisMax: 1,
+        canvasPixelWidth: 0,
+        canvasPixelHeight: 0,
+        canvasCssWidth: 0,
+        canvasCssHeight: 0,
+        redraw: () => {}
+      };
+      chartStates.set(container, state);
+      activeCharts.add(container);
+    }
+
+    return state;
+  }
+
   function renderCanvasChart(container, pairs, opts = {}) {
     const compact = !!opts.compact;
 
-    let items = pairs.map(r => ({ name: r[0] ?? "", value: toNumber(r[1]) }));
+    let items = pairs.map(r => {
+      const name = r[0] ?? "";
+      return { name, value: toNumber(r[1]), color: colorForName(name) };
+    });
     items.sort((a,b) => b.value - a.value);
 
-    const maxData = Math.max(0, ...items.map(x => x.value));
+    let maxData = 0;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].value > maxData) maxData = items[i].value;
+    }
     const axisMax = niceMax(maxData || 1);
 
     const showTargetInside = TARGET <= axisMax;
     const targetPct = showTargetInside ? (TARGET / axisMax) * 100 : 100;
 
-    container.innerHTML = `
-      <div class="vwrap ${compact ? "compact" : ""}">
-        <div class="cap"></div>
-        <div class="plot">
-          ${showTargetInside ? `
-            <div class="targetLine" style="bottom:${targetPct}%;"></div>
-            <div class="targetLabel" style="bottom:${targetPct}%; transform:translateY(50%);">ЦЕЛЬ ${esc(TARGET)}</div>
-          ` : `
-            <div class="targetLabel" style="top:10px; transform:none;">ЦЕЛЬ ${esc(TARGET)} (выше)</div>
-          `}
-          <canvas></canvas>
-        </div>
+    const state = ensureCanvasChart(container, compact);
+    const { plot, canvas, ctx, labelsEl, targetLine, targetLabel } = state;
+    state.items = items;
+    state.axisMax = axisMax;
 
-        <div class="xlabels ${compact ? "compact" : ""}"></div>
-      </div>
-    `;
+    while (labelsEl.children.length > items.length) {
+      labelsEl.removeChild(labelsEl.lastElementChild);
+    }
 
-    const plot = container.querySelector(".plot");
-    const canvas = container.querySelector("canvas");
-    const labelsEl = container.querySelector(".xlabels");
+    for (let i = 0; i < items.length; i++) {
+      let label = labelsEl.children[i];
+      if (!label) {
+        label = document.createElement("div");
+        label.className = "xlabel";
+        labelsEl.appendChild(label);
+      }
+      label.textContent = items[i].name;
+      label.title = items[i].name;
+    }
 
-    // строим подписи
-    labelsEl.innerHTML = items
-      .map(it => `<div class="xlabel" title="${esc(it.name)}">${esc(it.name)}</div>`)
-      .join("");
+    if (showTargetInside) {
+      targetLine.style.display = "";
+      targetLine.style.bottom = targetPct + "%";
+      targetLabel.style.top = "";
+      targetLabel.style.bottom = targetPct + "%";
+      targetLabel.style.transform = "translateY(50%)";
+      targetLabel.textContent = "ЦЕЛЬ " + TARGET;
+    } else {
+      targetLine.style.display = "none";
+      targetLine.style.bottom = "";
+      targetLabel.style.top = "10px";
+      targetLabel.style.bottom = "";
+      targetLabel.style.transform = "none";
+      targetLabel.textContent = "ЦЕЛЬ " + TARGET + " (выше)";
+    }
 
-    // синхронизация геометрии лейблов с геометрией столбиков
     function syncLabelsLayout(rectWidth) {
       const padL = 14, padR = 22; // как в redraw()
       const W = rectWidth - padL - padR;
@@ -495,30 +577,50 @@
         labelsEl.style.justifyContent = "center";
         labelsEl.style.alignItems = "center";
         labelsEl.style.columnGap = gap + "px";
-        [...labelsEl.children].forEach(el => (el.style.width = barW + "px"));
+        for (let i = 0; i < labelsEl.children.length; i++) {
+          labelsEl.children[i].style.width = barW + "px";
+        }
       } else {
         labelsEl.style.display = "flex";
         labelsEl.style.justifyContent = "center";
         labelsEl.style.alignItems = "center";
         labelsEl.style.gap = gap + "px";
-        [...labelsEl.children].forEach(el => (el.style.width = barW + "px"));
+        for (let i = 0; i < labelsEl.children.length; i++) {
+          labelsEl.children[i].style.width = barW + "px";
+        }
       }
 
       fitLabelsX(labelsEl);
     }
 
     function redraw() {
+      const items = state.items;
+      const axisMax = state.axisMax;
       const rect = plot.getBoundingClientRect();
       syncLabelsLayout(rect.width);
 
       const dpr = window.devicePixelRatio || 1;
 
-      canvas.width = Math.floor(rect.width * dpr);
-      canvas.height = Math.floor(rect.height * dpr);
-      canvas.style.width = rect.width + "px";
-      canvas.style.height = rect.height + "px";
+      const pixelWidth = Math.floor(rect.width * dpr);
+      const pixelHeight = Math.floor(rect.height * dpr);
 
-      const ctx = canvas.getContext("2d");
+      if (state.canvasPixelWidth !== pixelWidth || state.canvasPixelHeight !== pixelHeight) {
+        canvas.width = pixelWidth;
+        canvas.height = pixelHeight;
+        state.canvasPixelWidth = pixelWidth;
+        state.canvasPixelHeight = pixelHeight;
+      }
+
+      if (state.canvasCssWidth !== rect.width) {
+        canvas.style.width = rect.width + "px";
+        state.canvasCssWidth = rect.width;
+      }
+
+      if (state.canvasCssHeight !== rect.height) {
+        canvas.style.height = rect.height + "px";
+        state.canvasCssHeight = rect.height;
+      }
+
       ctx.setTransform(dpr,0,0,dpr,0,0);
       ctx.clearRect(0,0,rect.width,rect.height);
 
@@ -548,75 +650,158 @@
         const x = startX + i*(barW + gap);
         const y = padT + (H - h);
 
-        const color = colorForName(it.name);
-
         ctx.fillStyle = "#000";
         ctx.font = "800 50px Arial";
         ctx.textAlign = "center";
         ctx.fillText(String(it.value), x + barW/2, Math.max(12, y - 6));
 
         if (it.value <= 0) {
-          ctx.fillStyle = color;
+          ctx.fillStyle = it.color;
           ctx.fillRect(x, padT + H - 2, barW, 2);
         } else {
-          draw3DBar(ctx, x, y, barW, h, color);
+          draw3DBar(ctx, x, y, barW, h, it.color);
         }
       });
     }
 
+    state.redraw = redraw;
     redraw();
-    window.addEventListener("resize", redraw, { passive:true });
   }
 
   function renderSumsTable(pairs) {
     const rows = pairs.slice(0, 4).map(r => [r[0] ?? "", toNumber(r[1])]);
 
-    sumTableWrap.innerHTML = `
-      <table class="sumTable">
-        <thead>
-          <tr><th class="sumHead" colspan="2">Team ratings 📊</th></tr>
-        </thead>
-        <tbody>
-          ${rows.map(r => `
-            <tr>
-              <td class="sumLabel">${esc(r[0])}</td>
-              <td class="sumVal">${esc(r[1])}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    `;
+    if (sumTableRows.length !== rows.length || !sumTableWrap.querySelector(".sumTable")) {
+      sumTableWrap.innerHTML = `
+        <table class="sumTable">
+          <thead>
+            <tr><th class="sumHead" colspan="2">Team ratings 📊</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      `;
+      const tbody = sumTableWrap.querySelector("tbody");
+      sumTableRows = [];
+      for (let i = 0; i < rows.length; i++) {
+        const tr = document.createElement("tr");
+        const labelCell = document.createElement("td");
+        const valueCell = document.createElement("td");
+        labelCell.className = "sumLabel";
+        valueCell.className = "sumVal";
+        tr.appendChild(labelCell);
+        tr.appendChild(valueCell);
+        tbody.appendChild(tr);
+        sumTableRows.push(tr);
+      }
+    }
+
+    for (let i = 0; i < sumTableRows.length; i++) {
+      const labelCell = sumTableRows[i].children[0];
+      const valueCell = sumTableRows[i].children[1];
+      const row = rows[i] || ["", ""];
+      labelCell.textContent = row[0];
+      valueCell.textContent = row[1];
+    }
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function fetchTextWithTimeout(url, timeoutMs = FETCH_TIMEOUT_MS) {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    let timeoutId;
+
+    const timeout = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => {
+        if (controller) controller.abort();
+        reject(new Error("Google Sheets timeout"));
+      }, timeoutMs);
+    });
+
+    const fetchOptions = { cache:"no-store" };
+    if (controller) fetchOptions.signal = controller.signal;
+
+    const request = fetch(url, fetchOptions).then(response => {
+      if (!response.ok) {
+        throw new Error("Google Sheets HTTP " + response.status);
+      }
+      return response.text();
+    });
+
+    try {
+      return await Promise.race([request, timeout]);
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  async function fetchCSVRange(range) {
+    let lastError;
+
+    for (let attempt = 0; attempt <= FETCH_RETRIES; attempt++) {
+      try {
+        return await fetchTextWithTimeout(csvUrl(range));
+      } catch (error) {
+        lastError = error;
+        if (attempt < FETCH_RETRIES) {
+          await sleep(1000 * (attempt + 1));
+        }
+      }
+    }
+
+    throw lastError;
   }
 
   async function loadAll() {
+    if (isLoading) return;
+    isLoading = true;
+
     try {
       statusEl.textContent = "Загрузка…";
 
       const [ruText, engplText, sumsText] = await Promise.all([
-        fetch(csvUrl(RANGES.ru), { cache:"no-store" }).then(r => r.text()),
-        fetch(csvUrl(RANGES.engpl), { cache:"no-store" }).then(r => r.text()),
-        fetch(csvUrl(RANGES.sums), { cache:"no-store" }).then(r => r.text()),
+        fetchCSVRange(RANGES.ru),
+        fetchCSVRange(RANGES.engpl),
+        fetchCSVRange(RANGES.sums),
       ]);
 
-      const ru = parseCSV(ruText);
-      const engpl = parseCSV(engplText);
-      const sums = parseCSV(sumsText);
+      const dataChanged = !hasLoadedOnce
+        || ruText !== lastRuText
+        || engplText !== lastEngplText
+        || sumsText !== lastSumsText;
 
-      renderCanvasChart(chartRU, ru, { compact:false });
-      renderCanvasChart(chartENGPL, engpl, { compact:true });
-      renderSumsTable(sums);
+      if (dataChanged) {
+        lastRuText = ruText;
+        lastEngplText = engplText;
+        lastSumsText = sumsText;
 
+        const ru = parseCSV(ruText);
+        const engpl = parseCSV(engplText);
+        const sums = parseCSV(sumsText);
+
+        renderCanvasChart(chartRU, ru, { compact:false });
+        renderCanvasChart(chartENGPL, engpl, { compact:true });
+        renderSumsTable(sums);
+      }
+
+      hasLoadedOnce = true;
       statusEl.textContent = "Обновлено: " + new Date().toLocaleTimeString();
     } catch (e) {
-      chartRU.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
-      chartENGPL.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
-      sumTableWrap.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
-      statusEl.textContent = "Ошибка";
+      if (!hasLoadedOnce) {
+        chartRU.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
+        chartENGPL.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
+        sumTableWrap.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
+      }
+      statusEl.textContent = "Ошибка: " + e.message;
+    } finally {
+      isLoading = false;
     }
   }
 
   loadAll();
   setInterval(loadAll, REFRESH_MS);
+  setInterval(() => location.reload(), WATCHDOG_RELOAD_MS);
 </script>
 </body>
 </html>

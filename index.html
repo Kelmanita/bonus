@@ -28,25 +28,28 @@
     .grid{
       flex:1;
       display:grid;
-      grid-template-rows: 1.7fr 1.3fr;
+      grid-template-rows: 2fr 1fr;
       gap:14px;
       padding:14px 18px;
       box-sizing:border-box;
       min-height:0;
     }
 
+    .chartsStack{
+      display:grid;
+      grid-template-rows: 1fr 1fr;
+      gap:14px;
+      min-height:0;
+    }
+
     .row2{
       display:grid;
-      grid-template-columns: 1fr; /* диаграмма | зона под таблицу */
+      grid-template-columns: 1fr;
       gap:0;
       min-height:0;
     }
 
-    .row2 > .card:first-child{
-      display:none;
-    }
-
-    .row2 > .card:last-child{
+    .row2 > .card{
       justify-self: center;
       align-self: center;
       width: 40%;
@@ -63,11 +66,6 @@
       flex-direction:column;
     }
 
-    .card.engpl {
-      width: 75%;
-      margin: 0 auto;
-    }
-
     .card h2{
       margin:0 0 10px 0;
       font-size:22px;
@@ -76,26 +74,14 @@
       gap:10px;
       flex: 0 0 auto;
     }
-    .pill{
-      font-size:14px;
-      padding:3px 10px;
-      border-radius:999px;
-      border:1px solid #eee;
-      background:#fafafa;
-    }
 
     .chartHost{ flex:1 1 auto; min-height:0; }
 
-    /* ==== Chart wrapper ==== */
     .vwrap{
       height:100%;
       display:grid;
       grid-template-rows: 22px 2fr 1fr;
       gap:8px;
-    }
-
-    .vwrap.compact{
-      grid-template-rows: 22px 2.2fr 1.3fr;
     }
 
     .cap{
@@ -137,6 +123,7 @@
       white-space:nowrap;
       pointer-events:none;
     }
+
     .targetLine{
       position:absolute;
       left:0; right:0;
@@ -146,46 +133,36 @@
       pointer-events:none;
     }
 
-    /* ==== Labels ==== */
     .xlabels{
-      display:grid;
-      gap:6px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
       padding: 6px 10px 0px 10px;
       overflow: hidden;
-      align-items: center;
       min-width:0;
     }
 
     .xlabel{
       display:block;
-      width:100%;
       text-align:center;
       white-space:nowrap;
       font-weight:900;
-      font-size: 55px;
+      font-size: 45px;
       line-height:1.05;
-
       transform: translate(-12px, 10px) rotate(-60deg);
       transform-origin: center;
       user-select:none;
     }
 
-    /* ==== ENG/PL compact labels ==== */
-    .xlabels.compact{
-      display: grid;
-      grid-auto-flow: column;
-      justify-content: center;
-      align-items: center;
-      column-gap: 40px; /* совпадает с gap в canvas для compact */
-      padding-top: 28px;
-    }
-
-    /* ========= Таблица сумм ========= */
     #sumTableWrap{
       flex:1 1 auto;
       min-height:0;
       overflow:hidden;
+      border-radius:18px;
+      box-shadow:0 8px 24px rgba(0,0,0,0.06);
     }
+
     .sumTable{
       width:100%;
       border-collapse:separate;
@@ -205,13 +182,7 @@
       letter-spacing:0.5px;
     }
 
-    .sumTable tbody tr{
-      background:#fff;
-    }
-
-    .sumTable tbody tr:not(:last-child){
-      border-bottom:2px solid #e5e7eb;
-    }
+    .sumTable tbody tr{ background:#fff; }
 
     .sumTable td{
       padding:20px 12px;
@@ -219,36 +190,8 @@
       text-align:center;
     }
 
-    .sumLabel{
+    .sumLabel, .sumVal{
       font-size:55px;
-    }
-
-    .sumVal{
-      font-size:55px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    #sumTableWrap{
-      border-radius:18px;
-      box-shadow:0 8px 24px rgba(0,0,0,0.06);
-      overflow:hidden;
-    }
-
-    @media (max-width: 900px){
-      .row2{ grid-template-columns:1fr; }
-    }
-
-    /* FORCE: двигаем подписи ТОЛЬКО в ENG/PL */
-    .xlabels.compact .xlabel{
-      width: 72px;
-      text-align: center;
-      font-weight: 900;
-      font-size: 45px;
-
-      transform-origin: bottom center !important;
-      transform: translate(-24px, 28px) rotate(-60deg) !important;
-
-      user-select: none;
     }
 
     .card, .chartHost, .plot, .vwrap{
@@ -265,19 +208,21 @@
   </div>
 
   <div class="grid">
-    <div class="card">
-      <h2>RU</h2>
-      <div id="chartRU" class="chartHost"></div>
-    </div>
-
-    <div class="row2">
-      <div class="card engpl">
-        <h2>ENG / PL </h2>
-        <div id="chartENGPL" class="chartHost"></div>
+    <div class="chartsStack">
+      <div class="card">
+        <h2>RU</h2>
+        <div id="chartRU" class="chartHost"></div>
       </div>
 
       <div class="card">
-        <h2>Team ratings </h2>
+        <h2>ENG</h2>
+        <div id="chartENG" class="chartHost"></div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="card">
+        <h2>Team ratings</h2>
         <div id="sumTableWrap"></div>
       </div>
     </div>
@@ -294,31 +239,33 @@
   const FETCH_RETRIES = 2;
   const WATCHDOG_RELOAD_MS = 1000 * 60 * 30;
 
-  // true = “как Excel наглядно” (малые значения видны минимум 1.2% высоты)
   const MAKE_SMALL_VALUES_VISIBLE = true;
   const MIN_VISIBLE_PCT = 1.2;
 
   const RANGES = {
-    ru: "G2:H28",
-    engpl: "C2:D8",
+    ru: "G2:H100",
+    eng: "C2:D100",
     sums: "P25:Q28",
   };
 
   const statusEl = document.getElementById("status");
   const chartRU = document.getElementById("chartRU");
-  const chartENGPL = document.getElementById("chartENGPL");
+  const chartENG = document.getElementById("chartENG");
   const sumTableWrap = document.getElementById("sumTableWrap");
+
   const chartStates = new WeakMap();
   const activeCharts = new Set();
+
   const requestDrawFrame = window.requestAnimationFrame
     ? window.requestAnimationFrame.bind(window)
     : callback => setTimeout(callback, 16);
+
   let resizeRaf = 0;
   let isLoading = false;
   let hasLoadedOnce = false;
   let sumTableRows = [];
   let lastRuText = "";
-  let lastEngplText = "";
+  let lastEngText = "";
   let lastSumsText = "";
 
   window.addEventListener("resize", () => {
@@ -355,11 +302,17 @@
         row = []; cell = "";
         continue;
       }
+
       if (ch === "\r") continue;
 
-      if (ch === "," && !inQuotes) { row.push(cell); cell = ""; continue; }
+      if (ch === "," && !inQuotes) {
+        row.push(cell); cell = "";
+        continue;
+      }
+
       cell += ch;
     }
+
     row.push(cell); rows.push(row);
 
     return rows
@@ -404,8 +357,7 @@
   ];
 
   function colorForName(name) {
-    const i = hashString(name) % STRICT_PALETTE.length;
-    return STRICT_PALETTE[i];
+    return STRICT_PALETTE[hashString(name) % STRICT_PALETTE.length];
   }
 
   function niceMax(v) {
@@ -467,26 +419,25 @@
     }
   }
 
-  function ensureCanvasChart(container, compact) {
+  function ensureCanvasChart(container) {
     let state = chartStates.get(container);
 
-    if (!state || state.compact !== compact) {
+    if (!state) {
       container.innerHTML = `
-        <div class="vwrap ${compact ? "compact" : ""}">
+        <div class="vwrap">
           <div class="cap"></div>
           <div class="plot">
             <div class="targetLine"></div>
             <div class="targetLabel"></div>
             <canvas></canvas>
           </div>
-
-          <div class="xlabels ${compact ? "compact" : ""}"></div>
+          <div class="xlabels"></div>
         </div>
       `;
 
       const canvas = container.querySelector("canvas");
+
       state = {
-        compact,
         plot: container.querySelector(".plot"),
         canvas,
         ctx: canvas.getContext("2d"),
@@ -501,6 +452,7 @@
         canvasCssHeight: 0,
         redraw: () => {}
       };
+
       chartStates.set(container, state);
       activeCharts.add(container);
     }
@@ -508,26 +460,26 @@
     return state;
   }
 
-  function renderCanvasChart(container, pairs, opts = {}) {
-    const compact = !!opts.compact;
-
+  function renderCanvasChart(container, pairs) {
     let items = pairs.map(r => {
       const name = r[0] ?? "";
       return { name, value: toNumber(r[1]), color: colorForName(name) };
     });
+
     items.sort((a,b) => b.value - a.value);
 
     let maxData = 0;
     for (let i = 0; i < items.length; i++) {
       if (items[i].value > maxData) maxData = items[i].value;
     }
-    const axisMax = niceMax(maxData || 1);
 
+    const axisMax = niceMax(maxData || 1);
     const showTargetInside = TARGET <= axisMax;
     const targetPct = showTargetInside ? (TARGET / axisMax) * 100 : 100;
 
-    const state = ensureCanvasChart(container, compact);
+    const state = ensureCanvasChart(container);
     const { plot, canvas, ctx, labelsEl, targetLine, targetLabel } = state;
+
     state.items = items;
     state.axisMax = axisMax;
 
@@ -542,6 +494,7 @@
         label.className = "xlabel";
         labelsEl.appendChild(label);
       }
+
       label.textContent = items[i].name;
       label.title = items[i].name;
     }
@@ -555,7 +508,6 @@
       targetLabel.textContent = "ЦЕЛЬ " + TARGET;
     } else {
       targetLine.style.display = "none";
-      targetLine.style.bottom = "";
       targetLabel.style.top = "10px";
       targetLabel.style.bottom = "";
       targetLabel.style.transform = "none";
@@ -563,31 +515,20 @@
     }
 
     function syncLabelsLayout(rectWidth) {
-      const padL = 14, padR = 22; // как в redraw()
+      const padL = 14, padR = 22;
       const W = rectWidth - padL - padR;
 
       const n = items.length;
-      const gap = compact ? 40 : 8;
+      const gap = 8;
+      const barW = Math.max(10, Math.floor((W - gap * (n - 1)) / n));
 
-      const barW = compact ? 72 : Math.max(10, Math.floor((W - gap * (n - 1)) / n));
+      labelsEl.style.display = "flex";
+      labelsEl.style.justifyContent = "center";
+      labelsEl.style.alignItems = "center";
+      labelsEl.style.gap = gap + "px";
 
-      if (compact) {
-        labelsEl.style.display = "grid";
-        labelsEl.style.gridAutoFlow = "column";
-        labelsEl.style.justifyContent = "center";
-        labelsEl.style.alignItems = "center";
-        labelsEl.style.columnGap = gap + "px";
-        for (let i = 0; i < labelsEl.children.length; i++) {
-          labelsEl.children[i].style.width = barW + "px";
-        }
-      } else {
-        labelsEl.style.display = "flex";
-        labelsEl.style.justifyContent = "center";
-        labelsEl.style.alignItems = "center";
-        labelsEl.style.gap = gap + "px";
-        for (let i = 0; i < labelsEl.children.length; i++) {
-          labelsEl.children[i].style.width = barW + "px";
-        }
+      for (let i = 0; i < labelsEl.children.length; i++) {
+        labelsEl.children[i].style.width = barW + "px";
       }
 
       fitLabelsX(labelsEl);
@@ -597,10 +538,10 @@
       const items = state.items;
       const axisMax = state.axisMax;
       const rect = plot.getBoundingClientRect();
+
       syncLabelsLayout(rect.width);
 
       const dpr = window.devicePixelRatio || 1;
-
       const pixelWidth = Math.floor(rect.width * dpr);
       const pixelHeight = Math.floor(rect.height * dpr);
 
@@ -632,8 +573,8 @@
       ctx.fillRect(padL, padT + H + 6, W, 10);
 
       const n = items.length;
-      const gap = compact ? 40 : 8;
-      const barW = compact ? 72 : Math.max(10, Math.floor((W - gap*(n-1)) / n));
+      const gap = 8;
+      const barW = Math.max(10, Math.floor((W - gap*(n-1)) / n));
       const totalW = n * barW + (n-1)*gap;
       let startX = padL + Math.max(0, (W - totalW) / 2);
 
@@ -646,12 +587,11 @@
         }
 
         const h = (pct/100) * H;
-
         const x = startX + i*(barW + gap);
         const y = padT + (H - h);
 
         ctx.fillStyle = "#000";
-        ctx.font = "800 50px Arial";
+        ctx.font = "800 38px Arial";
         ctx.textAlign = "center";
         ctx.fillText(String(it.value), x + barW/2, Math.max(12, y - 6));
 
@@ -680,17 +620,22 @@
           <tbody></tbody>
         </table>
       `;
+
       const tbody = sumTableWrap.querySelector("tbody");
       sumTableRows = [];
+
       for (let i = 0; i < rows.length; i++) {
         const tr = document.createElement("tr");
         const labelCell = document.createElement("td");
         const valueCell = document.createElement("td");
+
         labelCell.className = "sumLabel";
         valueCell.className = "sumVal";
+
         tr.appendChild(labelCell);
         tr.appendChild(valueCell);
         tbody.appendChild(tr);
+
         sumTableRows.push(tr);
       }
     }
@@ -699,6 +644,7 @@
       const labelCell = sumTableRows[i].children[0];
       const valueCell = sumTableRows[i].children[1];
       const row = rows[i] || ["", ""];
+
       labelCell.textContent = row[0];
       valueCell.textContent = row[1];
     }
@@ -760,28 +706,28 @@
     try {
       statusEl.textContent = "Загрузка…";
 
-      const [ruText, engplText, sumsText] = await Promise.all([
+      const [ruText, engText, sumsText] = await Promise.all([
         fetchCSVRange(RANGES.ru),
-        fetchCSVRange(RANGES.engpl),
+        fetchCSVRange(RANGES.eng),
         fetchCSVRange(RANGES.sums),
       ]);
 
       const dataChanged = !hasLoadedOnce
         || ruText !== lastRuText
-        || engplText !== lastEngplText
+        || engText !== lastEngText
         || sumsText !== lastSumsText;
 
       if (dataChanged) {
         lastRuText = ruText;
-        lastEngplText = engplText;
+        lastEngText = engText;
         lastSumsText = sumsText;
 
         const ru = parseCSV(ruText);
-        const engpl = parseCSV(engplText);
+        const eng = parseCSV(engText);
         const sums = parseCSV(sumsText);
 
-        renderCanvasChart(chartRU, ru, { compact:false });
-        renderCanvasChart(chartENGPL, engpl, { compact:true });
+        renderCanvasChart(chartRU, ru);
+        renderCanvasChart(chartENG, eng);
         renderSumsTable(sums);
       }
 
@@ -790,9 +736,10 @@
     } catch (e) {
       if (!hasLoadedOnce) {
         chartRU.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
-        chartENGPL.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
+        chartENG.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
         sumTableWrap.innerHTML = `<div style="color:#b00020; padding:14px;">${esc(e.message)}</div>`;
       }
+
       statusEl.textContent = "Ошибка: " + e.message;
     } finally {
       isLoading = false;
@@ -805,4 +752,3 @@
 </script>
 </body>
 </html>
-

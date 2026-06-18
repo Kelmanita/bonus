@@ -520,8 +520,7 @@
 
       const n = items.length;
       const gap = 8;
-      const calculatedBarW = Math.floor((W - gap * (n - 1)) / n);
-      const barW = Math.min(60, Math.max(8, calculatedBarW));
+      const barW = Math.max(10, Math.floor((W - gap * (n - 1)) / n));
 
       labelsEl.style.display = "flex";
       labelsEl.style.justifyContent = "center";
@@ -575,8 +574,7 @@
 
       const n = items.length;
       const gap = 8;
-      const calculatedBarW = Math.floor((W - gap*(n-1)) / n);
-      const barW = Math.min(60, Math.max(8, calculatedBarW));
+      const barW = Math.max(10, Math.floor((W - gap*(n-1)) / n));
       const totalW = n * barW + (n-1)*gap;
       let startX = padL + Math.max(0, (W - totalW) / 2);
 

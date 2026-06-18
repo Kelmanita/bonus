@@ -460,7 +460,8 @@
     return state;
   }
 
-  function renderCanvasChart(container, pairs) {
+  function renderCanvasChart(container, pairs, opts = {}) {
+    const maxBarWidth = opts.maxBarWidth || null;
     let items = pairs.map(r => {
       const name = r[0] ?? "";
       return { name, value: toNumber(r[1]), color: colorForName(name) };
@@ -520,7 +521,8 @@
 
       const n = items.length;
       const gap = 8;
-      const barW = Math.max(10, Math.floor((W - gap * (n - 1)) / n));
+      const calculatedBarW = Math.max(10, Math.floor((W - gap * (n - 1)) / n));
+      const barW = maxBarWidth ? Math.min(maxBarWidth, calculatedBarW) : calculatedBarW;
 
       labelsEl.style.display = "flex";
       labelsEl.style.justifyContent = "center";
@@ -574,7 +576,8 @@
 
       const n = items.length;
       const gap = 8;
-      const barW = Math.max(10, Math.floor((W - gap*(n-1)) / n));
+      const calculatedBarW = Math.max(10, Math.floor((W - gap*(n-1)) / n));
+      const barW = maxBarWidth ? Math.min(maxBarWidth, calculatedBarW) : calculatedBarW;
       const totalW = n * barW + (n-1)*gap;
       let startX = padL + Math.max(0, (W - totalW) / 2);
 
@@ -727,7 +730,7 @@
         const sums = parseCSV(sumsText);
 
         renderCanvasChart(chartRU, ru);
-        renderCanvasChart(chartENG, eng);
+        renderCanvasChart(chartENG, eng, { maxBarWidth: 35 });
         renderSumsTable(sums);
       }
 

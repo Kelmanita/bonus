@@ -157,7 +157,7 @@
       font-weight:900;
       font-size:45px;
       line-height:1.05;
-      transform: translate(-12px, 10px) rotate(-60deg);
+      transform: translate(-32px, 10px) rotate(-60deg);
       transform-origin:center;
       user-select:none;
     }
@@ -168,7 +168,7 @@
     
     .engChart .xlabel{
       font-size:45px;
-      transform: translate(-12px, 25px) rotate(-60deg);
+      transform: translate(-32px, 25px) rotate(-60deg);
     }
 
     #sumTableWrap{
@@ -667,13 +667,6 @@
         } else {
           draw3DBar(ctx, x, y, barW, h, it.color);
         }
-
-        ctx.strokeStyle = "rgba(0,0,0,0.18)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x + barW / 2, padT + H + 2);
-        ctx.lineTo(x + barW / 2, rect.height);
-        ctx.stroke();
       });
     }
 

@@ -13,52 +13,48 @@
       background:#fff;
       font-family: Arial, sans-serif;
     }
+
     body { font-size: 18px; }
 
-    .wrap { height:100vh; display:flex; flex-direction:column; }
+    .wrap {
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
 
     .topbar{
-      display:flex; justify-content:space-between; align-items:center;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
       padding:14px 18px;
       border-bottom:1px solid #eee;
     }
-    .title{ font-size:22px; font-weight:800; }
-    .status{ font-size:16px; opacity:.75; white-space:nowrap; }
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+    }
+
+    .status{
+      font-size:16px;
+      opacity:.75;
+      white-space:nowrap;
+    }
 
     .grid{
       flex:1;
       display:grid;
-      grid-template-rows: 2fr 1fr;
-      gap:14px;
-      padding:14px 18px;
+      grid-template-rows: 1fr 1fr 0.7fr;
+      gap:10px;
+      padding:10px 18px;
       box-sizing:border-box;
       min-height:0;
-    }
-
-    .chartsStack{
-      display:grid;
-      grid-template-rows: 1fr 1fr;
-      gap:14px;
-      min-height:0;
-    }
-
-    .row2{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:0;
-      min-height:0;
-    }
-
-    .row2 > .card{
-      justify-self: center;
-      align-self: center;
-      width: 40%;
     }
 
     .card{
       border:1px solid #eee;
       border-radius:14px;
-      padding:14px;
+      padding:10px;
       box-sizing:border-box;
       min-height:0;
       overflow:hidden;
@@ -67,32 +63,22 @@
     }
 
     .card h2{
-      margin:0 0 10px 0;
-      font-size:22px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex: 0 0 auto;
+      margin:0 0 6px 0;
+      font-size:16px;
+      font-weight:900;
+      flex:0 0 auto;
     }
 
-    .chartHost{ flex:1 1 auto; min-height:0; }
+    .chartHost{
+      flex:1 1 auto;
+      min-height:0;
+    }
 
     .vwrap{
       height:100%;
       display:grid;
-      grid-template-rows: 22px 1.2fr 1.8fr;
+      grid-template-rows: 18px 1.15fr 1.85fr;
       gap:8px;
-    }
-
-    .cap{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      font-size:15px;
-      opacity:.75;
-      padding:0 6px;
-      white-space:nowrap;
-      user-select:none;
     }
 
     .plot{
@@ -114,7 +100,7 @@
     .targetLabel{
       position:absolute;
       right:8px;
-      font-size:13px;
+      font-size:10px;
       font-weight:900;
       color:#e11d48;
       background:rgba(255,255,255,.92);
@@ -126,7 +112,8 @@
 
     .targetLine{
       position:absolute;
-      left:0; right:0;
+      left:0;
+      right:0;
       height:2px;
       background:#e11d48;
       opacity:.85;
@@ -136,10 +123,10 @@
     .xlabels{
       display:flex;
       justify-content:center;
-      align-items:center;
+      align-items:flex-start;
       gap:8px;
-      padding: 20px 10px 0 10px;
-      overflow: hidden;
+      padding:34px 10px 0 10px;
+      overflow:hidden;
       min-width:0;
     }
 
@@ -148,11 +135,20 @@
       text-align:center;
       white-space:nowrap;
       font-weight:900;
-      font-size: 45px;
+      font-size:28px;
       line-height:1.05;
-      transform: translate(-12px, 35px) rotate(-60deg);
+      transform: translate(-12px, 28px) rotate(-60deg);
       transform-origin: center;
       user-select:none;
+    }
+
+    .engChart .xlabels{
+      padding-top:42px;
+    }
+
+    .engChart .xlabel{
+      font-size:30px;
+      transform: translate(-12px, 35px) rotate(-60deg);
     }
 
     #sumTableWrap{
@@ -165,9 +161,10 @@
 
     .sumTable{
       width:100%;
+      height:100%;
       border-collapse:separate;
       border-spacing:0;
-      font-size:55px;
+      font-size:34px;
       font-weight:900;
       text-align:center;
       border-radius:16px;
@@ -177,25 +174,31 @@
     .sumTable thead th{
       background:#86b97a;
       color:#000;
-      padding:18px 12px;
-      font-size:55px;
+      padding:8px 12px;
+      font-size:34px;
       letter-spacing:0.5px;
     }
 
-    .sumTable tbody tr{ background:#fff; }
+    .sumTable tbody tr{
+      background:#fff;
+    }
 
     .sumTable td{
-      padding:20px 12px;
+      padding:8px 12px;
       vertical-align:middle;
       text-align:center;
     }
 
-    .sumLabel, .sumVal{
-      font-size:55px;
+    .sumLabel,
+    .sumVal{
+      font-size:34px;
     }
 
-    .card, .chartHost, .plot, .vwrap{
-      min-width: 0;
+    .card,
+    .chartHost,
+    .plot,
+    .vwrap{
+      min-width:0;
     }
   </style>
 </head>
@@ -208,23 +211,19 @@
   </div>
 
   <div class="grid">
-    <div class="chartsStack">
-      <div class="card">
-        <h2>RU</h2>
-        <div id="chartRU" class="chartHost"></div>
-      </div>
-
-      <div class="card">
-        <h2>ENG</h2>
-        <div id="chartENG" class="chartHost"></div>
-      </div>
+    <div class="card">
+      <h2>RU</h2>
+      <div id="chartRU" class="chartHost"></div>
     </div>
 
-    <div class="row2">
-      <div class="card">
-        <h2>Team ratings</h2>
-        <div id="sumTableWrap"></div>
-      </div>
+    <div class="card">
+      <h2>ENG</h2>
+      <div id="chartENG" class="chartHost engChart"></div>
+    </div>
+
+    <div class="card">
+      <h2>Team ratings</h2>
+      <div id="sumTableWrap"></div>
     </div>
   </div>
 </div>
@@ -270,8 +269,10 @@
 
   window.addEventListener("resize", () => {
     if (resizeRaf) return;
+
     resizeRaf = requestDrawFrame(() => {
       resizeRaf = 0;
+
       activeCharts.forEach(container => {
         const state = chartStates.get(container);
         if (state) state.redraw();
@@ -285,6 +286,7 @@
 
   function parseCSV(text) {
     if (text && text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
     const rows = [];
     let row = [];
     let cell = "";
@@ -294,26 +296,38 @@
       const ch = text[i];
       const next = text[i + 1];
 
-      if (ch === '"' && inQuotes && next === '"') { cell += '"'; i++; continue; }
-      if (ch === '"') { inQuotes = !inQuotes; continue; }
+      if (ch === '"' && inQuotes && next === '"') {
+        cell += '"';
+        i++;
+        continue;
+      }
+
+      if (ch === '"') {
+        inQuotes = !inQuotes;
+        continue;
+      }
 
       if (ch === "\n" && !inQuotes) {
-        row.push(cell); rows.push(row);
-        row = []; cell = "";
+        row.push(cell);
+        rows.push(row);
+        row = [];
+        cell = "";
         continue;
       }
 
       if (ch === "\r") continue;
 
       if (ch === "," && !inQuotes) {
-        row.push(cell); cell = "";
+        row.push(cell);
+        cell = "";
         continue;
       }
 
       cell += ch;
     }
 
-    row.push(cell); rows.push(row);
+    row.push(cell);
+    rows.push(row);
 
     return rows
       .map(r => (r || []).map(v => (v ?? "").trim()))
@@ -338,10 +352,12 @@
   function hashString(s) {
     s = String(s ?? "");
     let h = 2166136261;
+
     for (let i = 0; i < s.length; i++) {
       h ^= s.charCodeAt(i);
       h = Math.imul(h, 16777619);
     }
+
     return h >>> 0;
   }
 
@@ -362,13 +378,17 @@
 
   function niceMax(v) {
     if (v <= 0) return 1;
+
     const exp = Math.pow(10, Math.floor(Math.log10(v)));
     const frac = v / exp;
+
     let niceFrac;
+
     if (frac <= 1) niceFrac = 1;
     else if (frac <= 2) niceFrac = 2;
     else if (frac <= 5) niceFrac = 5;
     else niceFrac = 10;
+
     return niceFrac * exp;
   }
 
@@ -425,7 +445,7 @@
     if (!state) {
       container.innerHTML = `
         <div class="vwrap">
-          <div class="cap"></div>
+          <div></div>
           <div class="plot">
             <div class="targetLine"></div>
             <div class="targetLabel"></div>
@@ -462,14 +482,23 @@
 
   function renderCanvasChart(container, pairs, opts = {}) {
     const maxBarWidth = opts.maxBarWidth || null;
+    const minBarWidth = opts.minBarWidth || 10;
+    const customGap = opts.gap || 8;
+    const valueFont = opts.valueFont || "800 34px Arial";
+
     let items = pairs.map(r => {
       const name = r[0] ?? "";
-      return { name, value: toNumber(r[1]), color: colorForName(name) };
+      return {
+        name,
+        value: toNumber(r[1]),
+        color: colorForName(name)
+      };
     });
 
     items.sort((a,b) => b.value - a.value);
 
     let maxData = 0;
+
     for (let i = 0; i < items.length; i++) {
       if (items[i].value > maxData) maxData = items[i].value;
     }
@@ -490,6 +519,7 @@
 
     for (let i = 0; i < items.length; i++) {
       let label = labelsEl.children[i];
+
       if (!label) {
         label = document.createElement("div");
         label.className = "xlabel";
@@ -509,24 +539,30 @@
       targetLabel.textContent = "ЦЕЛЬ " + TARGET;
     } else {
       targetLine.style.display = "none";
+      targetLine.style.bottom = "";
       targetLabel.style.top = "10px";
       targetLabel.style.bottom = "";
       targetLabel.style.transform = "none";
       targetLabel.textContent = "ЦЕЛЬ " + TARGET + " (выше)";
     }
 
-    function syncLabelsLayout(rectWidth) {
-      const padL = 14, padR = 22;
-      const W = rectWidth - padL - padR;
+    function getBarWidth(W, n, gap) {
+      const calculated = Math.floor((W - gap * (n - 1)) / n);
+      const safe = Math.max(minBarWidth, calculated);
+      return maxBarWidth ? Math.min(maxBarWidth, safe) : safe;
+    }
 
+    function syncLabelsLayout(rectWidth) {
+      const padL = 14;
+      const padR = 22;
+      const W = rectWidth - padL - padR;
       const n = items.length;
-      const gap = 8;
-      const calculatedBarW = Math.max(10, Math.floor((W - gap * (n - 1)) / n));
-      const barW = maxBarWidth ? Math.min(maxBarWidth, calculatedBarW) : calculatedBarW;
+      const gap = customGap;
+      const barW = getBarWidth(W, n, gap);
 
       labelsEl.style.display = "flex";
       labelsEl.style.justifyContent = "center";
-      labelsEl.style.alignItems = "center";
+      labelsEl.style.alignItems = "flex-start";
       labelsEl.style.gap = gap + "px";
 
       for (let i = 0; i < labelsEl.children.length; i++) {
@@ -567,7 +603,11 @@
       ctx.setTransform(dpr,0,0,dpr,0,0);
       ctx.clearRect(0,0,rect.width,rect.height);
 
-      const padL = 14, padR = 22, padT = 14, padB = 22;
+      const padL = 14;
+      const padR = 22;
+      const padT = 14;
+      const padB = 22;
+
       const W = rect.width - padL - padR;
       const H = rect.height - padT - padB;
 
@@ -575,11 +615,10 @@
       ctx.fillRect(padL, padT + H + 6, W, 10);
 
       const n = items.length;
-      const gap = 8;
-      const calculatedBarW = Math.max(10, Math.floor((W - gap*(n-1)) / n));
-      const barW = maxBarWidth ? Math.min(maxBarWidth, calculatedBarW) : calculatedBarW;
-      const totalW = n * barW + (n-1)*gap;
-      let startX = padL + Math.max(0, (W - totalW) / 2);
+      const gap = customGap;
+      const barW = getBarWidth(W, n, gap);
+      const totalW = n * barW + (n - 1) * gap;
+      const startX = padL + Math.max(0, (W - totalW) / 2);
 
       items.forEach((it, i) => {
         const rawPct = (it.value / axisMax) * 100;
@@ -589,14 +628,14 @@
           pct = Math.max(pct, MIN_VISIBLE_PCT);
         }
 
-        const h = (pct/100) * H;
-        const x = startX + i*(barW + gap);
+        const h = (pct / 100) * H;
+        const x = startX + i * (barW + gap);
         const y = padT + (H - h);
 
         ctx.fillStyle = "#000";
-        ctx.font = "800 38px Arial";
+        ctx.font = valueFont;
         ctx.textAlign = "center";
-        ctx.fillText(String(it.value), x + barW/2, Math.max(12, y - 6));
+        ctx.fillText(String(it.value), x + barW / 2, Math.max(12, y - 6));
 
         if (it.value <= 0) {
           ctx.fillStyle = it.color;
@@ -618,7 +657,7 @@
       sumTableWrap.innerHTML = `
         <table class="sumTable">
           <thead>
-            <tr><th class="sumHead" colspan="2">Team ratings 📊</th></tr>
+            <tr><th colspan="2">Team ratings 📊</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -675,6 +714,7 @@
       if (!response.ok) {
         throw new Error("Google Sheets HTTP " + response.status);
       }
+
       return response.text();
     });
 
@@ -693,6 +733,7 @@
         return await fetchTextWithTimeout(csvUrl(range));
       } catch (error) {
         lastError = error;
+
         if (attempt < FETCH_RETRIES) {
           await sleep(1000 * (attempt + 1));
         }
@@ -730,7 +771,14 @@
         const sums = parseCSV(sumsText);
 
         renderCanvasChart(chartRU, ru);
-        renderCanvasChart(chartENG, eng, { maxBarWidth: 35 });
+
+        renderCanvasChart(chartENG, eng, {
+          maxBarWidth: 65,
+          minBarWidth: 20,
+          gap: 34,
+          valueFont: "800 32px Arial"
+        });
+
         renderSumsTable(sums);
       }
 

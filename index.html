@@ -667,6 +667,13 @@
         } else {
           draw3DBar(ctx, x, y, barW, h, it.color);
         }
+
+        ctx.strokeStyle = "rgba(0,0,0,0.18)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x + barW / 2, padT + H + 2);
+        ctx.lineTo(x + barW / 2, rect.height);
+        ctx.stroke();
       });
     }
 
